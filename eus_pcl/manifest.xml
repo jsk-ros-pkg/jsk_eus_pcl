@@ -1,0 +1,13 @@
+<package>
+  <description brief="eus_pcl">
+    EusLisp libraries for using pointcloud processing method in PCL
+  </description>
+  <author>Yohei Kakiuchi</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/eus_pcl</url>
+
+  <depend package="pcl"/>
+
+  <!--rosdep name="pcl"/-->
+</package>

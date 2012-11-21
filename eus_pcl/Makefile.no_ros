@@ -1,0 +1,53 @@
+# -*- mode: Makefile; -*-
+all: lib/euspcl.so
+
+#PCL_VERSION=1.5 ## ROS fuerte
+# PCL_VERSION=1.6 ## official release
+PCL_VERSION=1.7 ## trunk
+
+CFLAGS  = $(shell pkg-config --cflags pcl_search-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_segmentation-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_io-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_keypoints-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_geometry-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_common-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_filters-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_kdtree-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_octree-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_apps-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_sample_consensus-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_features-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_surface-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_registration-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_visualization-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags pcl_tracking-$(PCL_VERSION))
+CFLAGS += -I$(shell pwd)/include
+
+LDFLAGS  = $(shell pkg-config --libs pcl_search-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_segmentation-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_io-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_keypoints-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_geometry-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_common-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_filters-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_kdtree-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_octree-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_apps-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_sample_consensus-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_features-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_surface-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_registration-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_visualization-$(PCL_VERSION))
+LDFLAGS += $(shell pkg-config --libs pcl_tracking-$(PCL_VERSION))
+
+EUSPCL_OBJS = src/euspcl_main.o src/euspcl_common.o src/euspcl_features.o src/euspcl_filters.o src/euspcl_io.o src/euspcl_octree.o src/euspcl_range_image.o src/euspcl_registration.o src/euspcl_sample_consensus.o src/euspcl_segmentation.o src/euspcl_surface.o src/euspcl_tracking.o
+
+lib/eus_pcl.so: $(EUSPCL_OBJS)
+	if [ ! -e lib ]; then mkdir -p lib; fi
+	g++ -O2 -shared -fPIC  -o $@ $^ ${LDFLAGS}
+
+.cpp.o:
+	g++ -O2 -fPIC -c $< -o $@ ${CFLAGS} -DLinux -D_REENTRANT -Dx86_64 -I${EUSDIR}/include -I${EUSDIR}/../irteus
+
+clean:
+	rm -f lib/*.so src/*.o
