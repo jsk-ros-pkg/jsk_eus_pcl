@@ -1,0 +1,17 @@
+<package>
+  <description brief="eus_pcl_ros">
+
+     eus_pcl_ros
+
+  </description>
+
+  <author>Yohei Kakiuchi</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/eus_pcl_ros</url>
+
+  <depend package="pcl_ros"/>
+
+</package>
+
+
