@@ -1,9 +1,6 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_surface.h"
 
-#include <pcl/surface/convex_hull.h>
-#include <pcl/surface/concave_hull.h>
-
 //pointer HOGE (register context *ctx, int n, pointer *argv) { return NIL; }
 #if 0
 int concave_plane(eusfloat_t *src, int ssize,
@@ -84,3 +81,27 @@ int convex_plane(eusfloat_t *src, int ssize,
   return cloud_hull->points.size();
 }
 #endif
+
+extern pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
+  pointer in_cloud = argv[0];
+
+  int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
+  pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
+
+  pcl::PointCloud< Point >::Ptr ptr =
+    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, width, height);
+
+  pcl::PointCloud< Point >::Ptr cloud_hull (new pcl::PointCloud<Point>);
+  pcl::ConvexHull< Point > chull;
+
+  chull.setInputCloud (ptr);
+  chull.reconstruct (*cloud_hull);
+
+  return make_pointcloud_from_pcl (ctx, *cloud_hull);
+}
+
+extern pointer PCL_CONVEX_HULL_PLANE
+(register context *ctx, int n, pointer *argv) {
+
+}
