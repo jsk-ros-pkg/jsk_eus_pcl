@@ -1,9 +1,9 @@
 # -*- mode: Makefile; -*-
-all: lib/euspcl.so
+all: lib/eus_pcl.so
 
-#PCL_VERSION=1.5 ## ROS fuerte
+PCL_VERSION=1.5 ## ROS fuerte
 # PCL_VERSION=1.6 ## official release
-PCL_VERSION=1.7 ## trunk
+#PCL_VERSION=1.7 ## trunk
 
 CFLAGS  = $(shell pkg-config --cflags pcl_search-$(PCL_VERSION))
 CFLAGS += $(shell pkg-config --cflags pcl_segmentation-$(PCL_VERSION))

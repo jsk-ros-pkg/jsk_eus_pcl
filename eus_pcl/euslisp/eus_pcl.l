@@ -1,4 +1,21 @@
-(load "euspcl.so")
+(load "../lib/eus_pcl.so")
+
+(defun make-random-pointcloud
+  (&key (num 1000) (with-color)
+        (with-normal) (scale 100.0))
+  (let (pts col nom ret)
+    (dotimes (i num)
+      (push (random-vector scale) pts))
+    (when with-color
+      (let ((mid (float-vector 0.5 0.5 0.5)))
+        (dotimes (i num)
+          (push (v+ mid (random-vector 1.0)) col))))
+    (when with-normal
+      (dotimes (i num)
+        (push (normalize-vector (random-vector 1.0)) nom)))
+    (setq ret (instance pointcloud :init
+                        :points pts :colors col :normals nom))
+    ret))
 
 ;; Obsolated. all codes below should be rewritten ugin euspcl.
 #|

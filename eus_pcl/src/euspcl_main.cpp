@@ -279,6 +279,8 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   if (rospkg == 0) rospkg=makepkg(ctx,makestring((char *)"PCL", 3),NIL,NIL);
   Spevalof(PACKAGE)=rospkg;
 #endif
+  // euspcl_common.cpp
+  defun(ctx,(char *)"PCL-PCA",argv[0],(pointer (*)())PCL_PCA);
 
   // euspcl_io.cpp
   defun(ctx,(char *)"READ-PCD",argv[0],(pointer (*)())PCL_READ_PCD);
