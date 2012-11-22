@@ -85,7 +85,7 @@ pointer make_eus_pointcloud(register context *ctx,
   return (w);
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, Points pt ) {
+pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt ) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL;
@@ -108,7 +108,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, Points pt ) {
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, PointsC pt ) {
+pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt ) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL;
@@ -145,7 +145,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, PointsC pt ) {
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, PointsN pt ) {
+pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt ) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, nom = NIL;
@@ -180,7 +180,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, PointsN pt ) {
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, PointsCN pt ) {
+pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL;
@@ -274,35 +274,37 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
 {
 #ifdef USE_PACKAGE
   // using package
-  pointer rospkg, p=Spevalof(PACKAGE);
-  rospkg=findpkg(makestring((char *)"PCL",3));
-  if (rospkg == 0) rospkg=makepkg(ctx,makestring((char *)"PCL", 3),NIL,NIL);
-  Spevalof(PACKAGE)=rospkg;
+  pointer rospkg, p = Spevalof (PACKAGE);
+  rospkg = findpkg (makestring ((char *)"PCL",3));
+  if (rospkg == 0) rospkg = makepkg (ctx, makestring((char *)"PCL", 3), NIL, NIL);
+  Spevalof (PACKAGE) = rospkg;
 #endif
   // euspcl_common.cpp
-  defun(ctx,(char *)"PCL-PCA",argv[0],(pointer (*)())PCL_PCA);
+  defun (ctx, (char *)"PCL-PCA", argv[0], (pointer (*)())PCL_PCA);
 
   // euspcl_io.cpp
-  defun(ctx,(char *)"READ-PCD",argv[0],(pointer (*)())PCL_READ_PCD);
-  defun(ctx,(char *)"WRITE-PCD",argv[0],(pointer (*)())PCL_WRITE_PCD);
+  defun (ctx, (char *)"READ-PCD", argv[0], (pointer (*)())PCL_READ_PCD);
+  defun (ctx, (char *)"WRITE-PCD", argv[0], (pointer (*)())PCL_WRITE_PCD);
 
   // euspcl_filters.cpp
-  defun(ctx,(char *)"VOXEL-GRID",argv[0],(pointer (*)())PCL_VOXEL_GRID);
+  defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
 
   // euspcl_segmentation
-  defun(ctx,(char *)"EXTRACT-EUCLIDEAN-CLUSTERS",argv[0],(pointer (*)())EXTRACT_EUCLIDEAN_CLUSTERS);
+  defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],
+         (pointer (*)())EXTRACT_EUCLIDEAN_CLUSTERS);
 
 #ifdef USE_PACKAGE
   // reset package
-  pointer_update(Spevalof(PACKAGE), p);
+  pointer_update (Spevalof (PACKAGE), p);
 #endif
+  CLS_PTS = intern(ctx, (char *)"POINTCLOUD", 10, userpkg);
 
-  K_EUSPCL_INIT = defkeyword(ctx,(char *)"INIT");
-  K_EUSPCL_POINTS = defkeyword(ctx,(char *)"POINTS");
-  K_EUSPCL_COLORS = defkeyword(ctx,(char *)"COLORS");
-  K_EUSPCL_NORMALS = defkeyword(ctx,(char *)"NORMALS");
-  K_EUSPCL_WIDTH = defkeyword(ctx,(char *)"WIDTH");
-  K_EUSPCL_HEIGHT = defkeyword(ctx,(char *)"HEIGHT");
+  K_EUSPCL_INIT = defkeyword (ctx, (char *)"INIT");
+  K_EUSPCL_POINTS = defkeyword (ctx, (char *)"POINTS");
+  K_EUSPCL_COLORS = defkeyword (ctx, (char *)"COLORS");
+  K_EUSPCL_NORMALS = defkeyword (ctx, (char *)"NORMALS");
+  K_EUSPCL_WIDTH = defkeyword (ctx, (char *)"WIDTH");
+  K_EUSPCL_HEIGHT = defkeyword (ctx, (char *)"HEIGHT");
 
   return 0;
 }

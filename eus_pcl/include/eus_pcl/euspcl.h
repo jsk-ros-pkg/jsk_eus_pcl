@@ -28,22 +28,20 @@
 #include <boost/make_shared.hpp>
 
 // euspcl_io.h
-#include <pcl/io/pcd_io.h>
-
+//#include <pcl/io/pcd_io.h>
 // euspcl_filters.h
-#include <pcl/filters/voxel_grid.h>
-
+//#include <pcl/filters/voxel_grid.h>
 // euspcl_segmentation.h
-#include <pcl/segmentation/extract_clusters.h>
+//#include <pcl/segmentation/extract_clusters.h>
 
 // for eus.h
-#define class   eus_class
-#define throw   eus_throw
-#define export  eus_export
-#define vector  eus_vector
-#define string  eus_string
+#define class    eus_class
+#define throw    eus_throw
+#define export   eus_export
+#define vector   eus_vector
+#define string   eus_string
 #define iostream eus_iostream
-#define complex eus_complex
+#define complex  eus_complex
 
 #include "eus.h"
 
@@ -68,6 +66,7 @@ typedef pcl::PointCloud< PointC >  PointsC;
 typedef pcl::PointCloud< PointCN > PointsCN;
 
 extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+extern pointer CLS_PTS;
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           int width, int height, Points &pt) {
@@ -190,9 +189,12 @@ make_pcl_pointcloud (register context *ctx,
 
   typename pcl::PointCloud< PTS >::Ptr pcl_cloud ( new  pcl::PointCloud< PTS > );
 
-  fvector2pcl_pointcloud(points == NIL ? NULL : points->c.ary.entity->c.fvec.fv,
-                         colors == NIL ? NULL : colors->c.ary.entity->c.fvec.fv,
-                         normals == NIL ? NULL : normals->c.ary.entity->c.fvec.fv,
+  fvector2pcl_pointcloud(points == NULL ? NULL :
+                         ( points == NIL ? NULL : points->c.ary.entity->c.fvec.fv ),
+                         colors == NULL ? NULL :
+                         ( colors == NIL ? NULL : colors->c.ary.entity->c.fvec.fv ),
+                         normals == NULL ? NULL :
+                         ( normals == NIL ? NULL : normals->c.ary.entity->c.fvec.fv ),
                          width, height, *pcl_cloud );
 
   return pcl_cloud;
@@ -212,12 +214,14 @@ inline pointer get_from_pointcloud(register context *ctx,
   return w;
 }
 
+// ispointer(p) && classof(p)->c.cls.name
+
 extern pointer eval_c_string(register context *ctx, const char *strings);
 extern pointer make_eus_pointcloud(register context *ctx, pointer pos, pointer col, pointer nom);
 
-extern pointer make_pointcloud_from_pcl ( register context *ctx, Points pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, PointsC pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, PointsN pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, PointsCN pt );
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt );
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt );
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt );
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt );
 
 #endif
