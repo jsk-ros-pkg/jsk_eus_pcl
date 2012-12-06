@@ -22,6 +22,7 @@ extern "C" {
 using namespace pcl;
 
 pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+pointer CLS_PTS;
 
 pointer eval_c_string(register context *ctx, const char *strings) {
   pointer p, ret, qstream, qstring;
@@ -289,7 +290,10 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_filters.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
 
-  // euspcl_segmentation
+  // euspcl_sample_consensus.cpp
+  defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())SAC_SEGMENTATION);
+
+  // euspcl_segmentation.cpp
   defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],
          (pointer (*)())EXTRACT_EUCLIDEAN_CLUSTERS);
 

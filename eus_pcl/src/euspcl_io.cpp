@@ -34,7 +34,7 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
     int ret = rd.readHeader(fname, hdr, origin, orientation, pcd_version, data_type, data_index);
 #endif
     if ( ret != 0 ) {
-      std::cerr << "read header error" << std::endl;
+      std::cerr << ";; read header error" << std::endl;
     } else {
       for (size_t i = 0; i < hdr.fields.size(); i++) {
         if ( hdr.fields[i].name == "rgb" ) {
@@ -73,7 +73,7 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
   wt.write < PTYPE > ( fname, *pcl_cloud, binary );
 
 pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
-  /* fname pointcloud &optional (binary t) */
+  /* pointcloud fname &optional (binary t) */
   bool binary = true;
   pointer in_cloud;
   pointer points,colors,normals;
@@ -82,10 +82,15 @@ pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
   std::string fname;
 
   ckarg2(2, 3);
-  if ( ! isstring(argv[0]) ) error(E_NOSTRING);
 
-  fname.assign( (char *)( argv[0]->c.str.chars ) );
-  in_cloud = argv[1];
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+  }
+  in_cloud = argv[0];
+
+  if ( ! isstring(argv[1]) ) error(E_NOSTRING);
+
+  fname.assign( (char *)( argv[1]->c.str.chars ) );
 
   if ( n > 2 ) {
     if ( argv[2] == NIL) binary = false;

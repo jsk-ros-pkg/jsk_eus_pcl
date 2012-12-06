@@ -13,6 +13,7 @@
   vpush(ret); pc++;
 
 pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
+  /* pointcloud &optional (leaf_x 0.02) (leaf_y 0.02) (leaf_z 0.02) */
   pointer in_cloud;
   pointer points,colors,normals;
   pointer ret = NIL;
@@ -24,6 +25,10 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   leaf_y = 0.02;
   leaf_z = 0.02;
   ckarg2(1, 4);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return ret;
+  }
   in_cloud = argv[0];
 
   if ( n > 1 ) {

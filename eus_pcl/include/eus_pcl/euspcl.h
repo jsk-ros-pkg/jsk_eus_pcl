@@ -214,7 +214,13 @@ inline pointer get_from_pointcloud(register context *ctx,
   return w;
 }
 
-// ispointer(p) && classof(p)->c.cls.name
+inline bool isPointCloud (pointer p) {
+  if (!ispointer(p)) return false;
+  if (classof(p)->c.cls.name == CLS_PTS)
+    return true;
+  else
+    return false;
+}
 
 extern pointer eval_c_string(register context *ctx, const char *strings);
 extern pointer make_eus_pointcloud(register context *ctx, pointer pos, pointer col, pointer nom);

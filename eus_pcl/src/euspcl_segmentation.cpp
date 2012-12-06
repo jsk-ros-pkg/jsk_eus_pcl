@@ -17,6 +17,10 @@ pointer EXTRACT_EUCLIDEAN_CLUSTERS (register context *ctx, int n, pointer *argv)
   maxsize = 20000;
 
   ckarg2(1, 4);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return ret;
+  }
   in_cloud = argv[0];
 
   if ( n > 1 ) {

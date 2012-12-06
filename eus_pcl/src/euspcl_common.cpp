@@ -2,7 +2,12 @@
 #include "eus_pcl/euspcl_common.h"
 
 pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
-  pointer in_cloud = argv[0];
+  pointer in_cloud;
+  ckarg(1);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+  }
+  in_cloud = argv[0];
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
   int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
@@ -17,7 +22,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
   pca.setInputCloud (ptr);
 
   //pca.getCoefficients();
-  pointer ret;
+  pointer ret = NIL;
   {
     pointer tmp = makevector(C_FLTVECTOR, 3);
     vpush (tmp); pc++;
@@ -26,7 +31,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
     //printf("%f %f %f %f\n", mean[0], mean[1], mean[2], mean[3]);
     eusfloat_t *fv = tmp->c.fvec.fv;
     fv[0] = mean[0]; fv[1] = mean[1];  fv[2] = mean[2];
-    ret = cons (ctx, tmp, NIL);
+    ret = cons (ctx, tmp, ret);
     vpush (ret); pc++;
   }
   {
