@@ -28,9 +28,9 @@ pointer eval_c_string(register context *ctx, const char *strings) {
   pointer p, ret, qstream, qstring;
   int total_length;
 
-  total_length=strlen(strings);
-  qstring = makebuffer(total_length);
-  vpush(qstring);
+  total_length=strlen (strings);
+  qstring = makebuffer (total_length);
+  vpush (qstring);
 
   {
     const char *s = strings;
@@ -39,18 +39,18 @@ pointer eval_c_string(register context *ctx, const char *strings) {
     *d++= '\n'; /* newline is needed to ensure the reader to stop ignoring comments */
   }
 
-  qstream=(pointer)mkstream(ctx, K_IN, qstring);
-  vpush(qstream);
+  qstream = (pointer)mkstream (ctx, K_IN, qstring);
+  vpush (qstream);
 
-  qstream->c.stream.tail = makeint(total_length);
-  while ((p=reader(ctx, qstream, NIL))!= (pointer)(-1)) {
-     if (debug) { prinx(ctx,p,STDOUT); terpri(STDOUT);  }
-     ret=eval(ctx, p);
+  qstream->c.stream.tail = makeint (total_length);
+  while ((p = reader (ctx, qstream, NIL)) != (pointer)(-1)) {
+     if (debug) { prinx (ctx,p,STDOUT); terpri(STDOUT);  }
+     ret = eval (ctx, p);
   }
 
   vpop();
   vpop();
-  return(ret);
+  return (ret);
 }
 
 pointer make_eus_pointcloud(register context *ctx,
@@ -58,31 +58,31 @@ pointer make_eus_pointcloud(register context *ctx,
   register pointer *local=ctx->vsp;
   pointer w, name;
   int pc;
-  local[0] = eval_c_string(ctx, "user::pointcloud");
+  local[0] = eval_c_string (ctx, "user::pointcloud");
   ctx->vsp = local + 1;
 
-  w=(pointer)INSTANTIATE(ctx, 1, local);  /*instantiate*/
+  w = (pointer)INSTANTIATE (ctx, 1, local);  /*instantiate*/
 
   pc = 2;
-  local[0]= w; // ??
-  local[1]= K_EUSPCL_INIT;
+  local[0] = w; // ??
+  local[1] = K_EUSPCL_INIT;
 
-  if(pos != NIL) {
-    local[pc++]= K_EUSPCL_POINTS;
-    local[pc++]= pos;
+  if (pos != NIL) {
+    local[pc++] = K_EUSPCL_POINTS;
+    local[pc++] = pos;
   }
-  if(col != NIL) {
-    local[pc++]= K_EUSPCL_COLORS;
-    local[pc++]= col;
+  if (col != NIL) {
+    local[pc++] = K_EUSPCL_COLORS;
+    local[pc++] = col;
   }
-  if(nom != NIL) {
-    local[pc++]= K_EUSPCL_NORMALS;
-    local[pc++]= nom;
+  if (nom != NIL) {
+    local[pc++] = K_EUSPCL_NORMALS;
+    local[pc++] = nom;
   }
-  ctx->vsp=local+pc;
-  w=(pointer)SEND(ctx, pc, local); /* send :init */
+  ctx->vsp = local + pc;
+  w = (pointer)SEND (ctx, pc, local); /* send :init */
 
-  ctx->vsp=local;
+  ctx->vsp = local;
   return (w);
 }
 
@@ -91,20 +91,20 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt ) {
   size_t len = pt.points.size();
   pointer pos = NIL;
 
-  pos = makematrix(ctx, len, 3);
-  vpush( pos ); pc++;
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
-    for ( Points::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (Points::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
     }
   }
 
-  pointer retp = make_eus_pointcloud(ctx, pos, NIL, NIL);
-  while ( pc-- > 0) vpop();
+  pointer retp = make_eus_pointcloud (ctx, pos, NIL, NIL);
+  while (pc-- > 0) vpop();
 
   return retp;
 }
@@ -114,24 +114,24 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt ) {
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL;
 
-  pos = makematrix(ctx, len, 3);
-  vpush( pos ); pc++;
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
-    for ( PointsC::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsC::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
     }
   }
 
-  col = makematrix(ctx, len, 3);
-  vpush( col ); pc++;
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
   {
     eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
-    for ( PointsC::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsC::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
 
       *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
@@ -140,8 +140,8 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt ) {
     }
   }
 
-  pointer retp = make_eus_pointcloud(ctx, pos, col, NIL);
-  while ( pc-- > 0) vpop();
+  pointer retp = make_eus_pointcloud (ctx, pos, col, NIL);
+  while (pc-- > 0) vpop();
 
   return retp;
 }
@@ -151,32 +151,32 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt ) {
   size_t len = pt.points.size();
   pointer pos = NIL, nom = NIL;
 
-  pos = makematrix(ctx, len, 3);
-  vpush( pos ); pc++;
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
-    for ( PointsN::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsN::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
     }
   }
 
-  nom = makematrix(ctx, len, 3);
-  vpush( nom ); pc++;
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
-    for ( PointsN::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsN::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
     }
   }
 
-  pointer retp = make_eus_pointcloud(ctx, pos, NIL, nom);
-  while ( pc-- > 0) vpop();
+  pointer retp = make_eus_pointcloud (ctx, pos, NIL, nom);
+  while (pc-- > 0) vpop();
 
   return retp;
 }
@@ -186,24 +186,24 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL;
 
-  pos = makematrix(ctx, len, 3);
-  vpush( pos ); pc++;
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
-    for ( PointsCN::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsCN::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
     }
   }
 
-  col = makematrix(ctx, len, 3);
-  vpush( col ); pc++;
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
   {
     eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
-    for ( PointsCN::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsCN::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
 
       *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
@@ -212,20 +212,106 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
     }
   }
 
-  nom = makematrix(ctx, len, 3);
-  vpush( nom ); pc++;
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
-    for ( PointsCN::const_iterator it = pt.begin();
-          it != pt.end(); it++ ) {
+    for (PointsCN::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
     }
   }
 
-  pointer retp = make_eus_pointcloud(ctx, pos, col, nom);
-  while ( pc-- > 0) vpop();
+  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
+  while (pc-- > 0) vpop();
+
+  return retp;
+}
+
+pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                  const Normals &nm) {
+  int pc = 0;
+  size_t len = pt.points.size();
+  pointer pos = NIL, col = NIL, nom = NIL;
+
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
+  {
+    eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    for (Points::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
+      *fv++ = 1000 * it->x;
+      *fv++ = 1000 * it->y;
+      *fv++ = 1000 * it->z;
+    }
+  }
+
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  {
+    eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    for (Normals::const_iterator it = nm.begin();
+         it != nm.end(); it++) {
+      *fv++ = it->normal_x;
+      *fv++ = it->normal_y;
+      *fv++ = it->normal_z;
+    }
+  }
+
+  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
+  while (pc-- > 0) vpop();
+
+  return retp;
+}
+
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
+                                  const Normals &nm) {
+  int pc = 0;
+  size_t len = pt.points.size();
+  pointer pos = NIL, col = NIL, nom = NIL;
+
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
+  {
+    eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    for (PointsC::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
+      *fv++ = 1000 * it->x;
+      *fv++ = 1000 * it->y;
+      *fv++ = 1000 * it->z;
+    }
+  }
+
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
+  {
+    eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
+    for (PointsC::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
+      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
+
+      *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fv++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fv++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+    }
+  }
+
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  {
+    eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    for (Normals::const_iterator it = nm.begin();
+         it != nm.end(); it++) {
+      *fv++ = it->normal_x;
+      *fv++ = it->normal_y;
+      *fv++ = it->normal_z;
+    }
+  }
+
+  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
+  while (pc-- > 0) vpop();
 
   return retp;
 }
@@ -240,32 +326,32 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
 
   //
   ret = make_pointcloud_from_pcl ( ctx, pcl_cloud_filtered );
-  vpush(ret); pc++;
+  vpush (ret); pc++;
 }
 
 inline pointer process (register context *ctx, pointer in_cloud) {
-  int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
-  int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
-  pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
-  pointer colors = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_COLORS);
-  pointer normals = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  pointer colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
+  pointer normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
   pointer ret = NIL;
   int pc = 0;
 
   // parse
   if ( points != NIL && colors != NIL && normals != NIL ) {
-    MACRO_TEMPLATE_ (PointCN, );
+    MACRO_TEMPLATE_(PointCN, );
   } else if ( points != NIL && colors != NIL ) {
-    MACRO_TEMPLATE_ (PointC, );
+    MACRO_TEMPLATE_(PointC, );
   } else if ( points != NIL && normals != NIL ) {
-    MACRO_TEMPLATE_ (PointN, );
+    MACRO_TEMPLATE_(PointN, );
   } else if ( points != NIL ) {
-    MACRO_TEMPLATE_ (Point, );
+    MACRO_TEMPLATE_(Point, );
   } else {
     // warning there is no points.
   }
 
-  while ( pc-- > 0) vpop();
+  while (pc-- > 0) vpop();
   return ret;
 }
 #endif
@@ -290,8 +376,11 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_filters.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
 
+  // euspcl_features.cpp
+  defun (ctx, (char *)"ADD_NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
+
   // euspcl_sample_consensus.cpp
-  defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())SAC_SEGMENTATION);
+  defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION);
 
   // euspcl_segmentation.cpp
   defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],

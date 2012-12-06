@@ -51,7 +51,7 @@
   ret = make_pointcloud_from_pcl ( ctx, ret_pcl_cloud );                \
   vpush(ret); pc++;
 
-pointer SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
+pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   pointer in_cloud;
   pointer points, colors, normals;
   pointer ret = NIL;
@@ -84,6 +84,6 @@ pointer SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
     // warning there is no points.
   }
 
-  while ( pc-- > 0) vpop();
+  while (pc-- > 0) vpop();
   return ret;
 }

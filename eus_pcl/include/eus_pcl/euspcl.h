@@ -208,7 +208,22 @@ inline pointer get_from_pointcloud(register context *ctx,
   local[0] = pointcloud;
   local[1] = key;
   ctx->vsp = local + 2;
-  w=(pointer)SEND(ctx, 2, local);  /*instantiate*/
+  w = (pointer)SEND(ctx, 2, local);
+  ctx->vsp = local;
+
+  return w;
+}
+
+inline pointer set_to_pointcloud(register context *ctx,
+                                 pointer pointcloud,
+                                 pointer key, pointer obj) {
+  register pointer *local = ctx->vsp, w;
+
+  local[0] = pointcloud;
+  local[1] = key;
+  local[2] = obj;
+  ctx->vsp = local + 3;
+  w = (pointer)SEND(ctx, 3, local);
   ctx->vsp = local;
 
   return w;
@@ -229,5 +244,8 @@ extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &p
 extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt );
 extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt );
 extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt );
-
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt,
+                                          const Normals &nm );
+extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt,
+                                          const Normals &nm );
 #endif

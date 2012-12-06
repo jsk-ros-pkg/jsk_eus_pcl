@@ -1,9 +1,9 @@
 #ifndef __EUSPCL_FEATURES__
 #define __EUSPCL_FEATURES__
-// write pcl include files to euspcl.h
-// #include <pcl/>
+
+#include <pcl/features/normal_3d.h>
 
 // eus functions
-//extern pointer HOGE (register context *ctx, int n, pointer *argv);
+extern pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv);
 
 #endif
