@@ -22,7 +22,8 @@ extern "C" {
 using namespace pcl;
 
 pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
-pointer CLS_PTS;
+pointer K_EUSPCL_POS, K_EUSPCL_ROT;
+pointer EUSPCL_CLS_PTS;
 
 pointer eval_c_string(register context *ctx, const char *strings) {
   pointer p, ret, qstream, qstring;
@@ -55,7 +56,7 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 
 pointer make_eus_pointcloud(register context *ctx,
                             pointer pos, pointer col, pointer nom) {
-  register pointer *local=ctx->vsp;
+  register pointer *local = ctx->vsp;
   pointer w, name;
   int pc;
   local[0] = eval_c_string (ctx, "user::pointcloud");
@@ -79,6 +80,36 @@ pointer make_eus_pointcloud(register context *ctx,
     local[pc++] = K_EUSPCL_NORMALS;
     local[pc++] = nom;
   }
+  ctx->vsp = local + pc;
+  w = (pointer)SEND (ctx, pc, local); /* send :init */
+
+  ctx->vsp = local;
+  return (w);
+}
+
+pointer make_eus_coordinates (register context *ctx,
+                              pointer pos, pointer rot) {
+  register pointer *local = ctx->vsp;
+  pointer w, name;
+  int pc;
+  local[0] = eval_c_string (ctx, "user::coordinates");
+  ctx->vsp = local + 1;
+
+  w = (pointer)INSTANTIATE (ctx, 1, local);  /*instantiate*/
+
+  pc = 2;
+  local[0] = w; // ??
+  local[1] = K_EUSPCL_INIT;
+
+  if (pos != NIL) {
+    local[pc++] = K_EUSPCL_POS;
+    local[pc++] = pos;
+  }
+  if (rot != NIL) {
+    local[pc++] = K_EUSPCL_ROT;
+    local[pc++] = rot;
+  }
+
   ctx->vsp = local + pc;
   w = (pointer)SEND (ctx, pc, local); /* send :init */
 
@@ -390,7 +421,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // reset package
   pointer_update (Spevalof (PACKAGE), p);
 #endif
-  CLS_PTS = intern(ctx, (char *)"POINTCLOUD", 10, userpkg);
+  EUSPCL_CLS_PTS = intern(ctx, (char *)"POINTCLOUD", 10, userpkg);
 
   K_EUSPCL_INIT = defkeyword (ctx, (char *)"INIT");
   K_EUSPCL_POINTS = defkeyword (ctx, (char *)"POINTS");
@@ -398,6 +429,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   K_EUSPCL_NORMALS = defkeyword (ctx, (char *)"NORMALS");
   K_EUSPCL_WIDTH = defkeyword (ctx, (char *)"WIDTH");
   K_EUSPCL_HEIGHT = defkeyword (ctx, (char *)"HEIGHT");
-
+  K_EUSPCL_POS = defkeyword (ctx, (char *)"POS");
+  K_EUSPCL_ROT = defkeyword (ctx, (char *)"ROT");
   return 0;
 }

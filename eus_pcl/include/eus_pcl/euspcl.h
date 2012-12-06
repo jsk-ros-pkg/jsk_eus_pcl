@@ -66,7 +66,8 @@ typedef pcl::PointCloud< PointC >  PointsC;
 typedef pcl::PointCloud< PointCN > PointsCN;
 
 extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
-extern pointer CLS_PTS;
+extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
+extern pointer EUSPCL_CLS_PTS;
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           int width, int height, Points &pt) {
@@ -203,7 +204,7 @@ make_pcl_pointcloud (register context *ctx,
 inline pointer get_from_pointcloud(register context *ctx,
                                    pointer pointcloud,
                                    pointer key) {
-  register pointer *local=ctx->vsp, w;
+  register pointer *local = ctx->vsp, w;
 
   local[0] = pointcloud;
   local[1] = key;
@@ -231,7 +232,7 @@ inline pointer set_to_pointcloud(register context *ctx,
 
 inline bool isPointCloud (pointer p) {
   if (!ispointer(p)) return false;
-  if (classof(p)->c.cls.name == CLS_PTS)
+  if (classof(p)->c.cls.name == EUSPCL_CLS_PTS)
     return true;
   else
     return false;
@@ -239,6 +240,7 @@ inline bool isPointCloud (pointer p) {
 
 extern pointer eval_c_string(register context *ctx, const char *strings);
 extern pointer make_eus_pointcloud(register context *ctx, pointer pos, pointer col, pointer nom);
+extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
 
 extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt );
 extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt );
