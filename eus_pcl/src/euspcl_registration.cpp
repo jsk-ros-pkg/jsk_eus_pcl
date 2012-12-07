@@ -2,13 +2,13 @@
 #include "eus_pcl/euspcl_registration.h"
 
 pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
-  /* ( source_pointcloud target_pointcloud &optional (icp_type) ) */
+  /* ( source_pointcloud target_pointcloud &optional (icp_type) (guess_coords)) */
   pointer A_cloud, B_cloud;
-  EUS_REGIST_TYPE icp_type;
+  EUS_REGIST_TYPE icp_type = REGIST_SVD;
   // TODO: parameter should be set
-  // TODO: add guess coords
-
-  ckarg(2);//
+  Eigen::Matrix4f guess_mat;
+  bool use_guess = false;
+  ckarg2(2, 4);//
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
   }
@@ -17,6 +17,14 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
     error(E_TYPEMISMATCH);
   }
   B_cloud = argv[1];
+
+  if (n > 2) {
+    icp_type = EUS_REGIST_TYPE (intval(argv[2]));
+  }
+  if (n > 3) {
+    use_guess = true;
+    guess_mat = convert_coordinates_to_eigenmatrix(ctx, argv[3]);
+  }
 
   int a_width = intval (get_from_pointcloud (ctx, A_cloud, K_EUSPCL_WIDTH));
   int a_height = intval (get_from_pointcloud (ctx, A_cloud, K_EUSPCL_HEIGHT));
@@ -49,13 +57,20 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   case REGIST_NDT:
     icp.reset (new pcl::NormalDistributionsTransform< Point, Point >());
     break;
+  default:
+    // warning
+    break;
   }
 
   icp->setInputCloud (a_ptr);
   icp->setInputTarget (b_ptr);
 
   Points Final;
-  icp->align (Final);
+  if (use_guess) {
+    icp->align (Final, guess_mat);
+  } else {
+    icp->align (Final);
+  }
 
   //std::cout << "has converged:" << icp.hasConverged() << " score: " <<
   //icp.getFitnessScore() << std::endl;
