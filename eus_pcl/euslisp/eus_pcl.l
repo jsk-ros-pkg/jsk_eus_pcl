@@ -1,5 +1,11 @@
 (load "../lib/eus_pcl.so")
 
+;; EUS_ICP_TYPE
+(defvar pcl::*REGIST_SVD*  0)
+(defvar pcl::*REGIST_NL*   1)
+(defvar pcl::*REGIST_GICP* 2)
+(defvar pcl::*REGIST_NDT*  3)
+
 (defun make-random-pointcloud
   (&key (num 1000) (with-color)
         (with-normal) (scale 100.0))

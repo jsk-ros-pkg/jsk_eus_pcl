@@ -433,7 +433,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"ADD_NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
 
   // euspcl_registration.cpp
-  defun (ctx, (char *)"ICP_RAW", argv[0], (pointer (*)())PCL_ICP_RAW);
+  defun (ctx, (char *)"REGISTRATION_RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);
 
   // euspcl_sample_consensus.cpp
   defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION);

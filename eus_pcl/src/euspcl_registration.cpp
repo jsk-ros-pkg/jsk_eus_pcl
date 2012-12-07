@@ -1,9 +1,12 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_registration.h"
 
-pointer PCL_ICP_RAW (register context *ctx, int n, pointer *argv) {
-  /* ( source_pointcloud target_pointcloud ) */
+pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
+  /* ( source_pointcloud target_pointcloud &optional (icp_type) ) */
   pointer A_cloud, B_cloud;
+  EUS_REGIST_TYPE icp_type;
+  // TODO: parameter should be set
+  // TODO: add guess coords
 
   ckarg(2);//
   if (!isPointCloud (argv[0])) {
@@ -33,9 +36,20 @@ pointer PCL_ICP_RAW (register context *ctx, int n, pointer *argv) {
 
   pcl::Registration< Point, Point, float >::Ptr icp;
 
-  icp.reset (new pcl::IterativeClosestPoint< Point, Point > ());
-  //icp.reset (new pcl::IterativeClosestPointNonLinear< Point, Point >());
-  //icp.reset (new pcl::GeneralizedIterativeClosestPoint< Point, Point >());
+  switch (icp_type) {
+  case REGIST_SVD:
+    icp.reset (new pcl::IterativeClosestPoint< Point, Point > ());
+    break;
+  case REGIST_NL:
+    icp.reset (new pcl::IterativeClosestPointNonLinear< Point, Point >());
+    break;
+  case REGIST_GICP:
+    icp.reset (new pcl::GeneralizedIterativeClosestPoint< Point, Point >());
+    break;
+  case REGIST_NDT:
+    icp.reset (new pcl::NormalDistributionsTransform< Point, Point >());
+    break;
+  }
 
   icp->setInputCloud (a_ptr);
   icp->setInputTarget (b_ptr);
@@ -45,26 +59,8 @@ pointer PCL_ICP_RAW (register context *ctx, int n, pointer *argv) {
 
   //std::cout << "has converged:" << icp.hasConverged() << " score: " <<
   //icp.getFitnessScore() << std::endl;
-
-  Eigen::Matrix4f tma = icp->getFinalTransformation ();
-  pointer pos, rot;
-  pos = makefvector (3);
-  vpush (pos); pc++;
-  //std::cout << tma << std::endl;
-  pos->c.fvec.fv[0] = tma (0, 3);
-  pos->c.fvec.fv[1] = tma (1, 3);
-  pos->c.fvec.fv[2] = tma (2, 3);
-
-  rot = makematrix (ctx, 3, 3);
-  vpush (rot); pc++;
-  //Eigen::Quaternion<float> q (tma.block<3,3>(0,0));
-  {
-    eusfloat_t *fv = rot->c.ary.entity->c.fvec.fv;
-    fv[0] = tma (0, 0); fv[1] = tma (0, 1); fv[2] = tma (0, 2);
-    fv[3] = tma (1, 0); fv[4] = tma (1, 1); fv[5] = tma (1, 2);
-    fv[6] = tma (2, 0); fv[7] = tma (2, 1); fv[8] = tma (2, 2);
-  }
-  ret = make_eus_coordinates (ctx, pos, rot);
+  Eigen::Matrix4f emat (icp->getFinalTransformation ());
+  ret = convert_eigenmatrix_to_coordinates (ctx, emat);
 
   while (pc-- > 0) vpop();
   return ret;

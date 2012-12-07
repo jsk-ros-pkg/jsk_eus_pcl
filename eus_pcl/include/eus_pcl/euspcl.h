@@ -73,6 +73,21 @@ extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS
 extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 extern pointer EUSPCL_CLS_PTS;
 
+extern pointer eval_c_string (register context *ctx, const char *strings);
+extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col, pointer nom);
+extern pointer make_eus_pointcloud (register context *ctx, pointer pcloud,
+                                    pointer pos, pointer col, pointer nom);
+extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
+
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                         const Normals &nm, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
+                                         const Normals &nm, pointer pcloud = NULL);
+
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           int width, int height, Points &pt) {
   pt.width    = width;
@@ -242,18 +257,49 @@ inline bool isPointCloud (pointer p) {
     return false;
 }
 
-extern pointer eval_c_string (register context *ctx, const char *strings);
-extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col, pointer nom);
-extern pointer make_eus_pointcloud (register context *ctx, pointer pcloud,
-                                    pointer pos, pointer col, pointer nom);
-extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
+inline pointer convert_eigenmatrix_to_coordinates (register context *ctx, Eigen::Matrix4f &tma) {
+  pointer pos, rot;
+  int pc = 0;
+  pos = makefvector (3);
+  vpush (pos); pc++;
+  pos->c.fvec.fv[0] = tma (0, 3);
+  pos->c.fvec.fv[1] = tma (1, 3);
+  pos->c.fvec.fv[2] = tma (2, 3);
 
-extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud = NULL);
-extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud = NULL);
-extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, pointer pcloud = NULL);
-extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, pointer pcloud = NULL);
-extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
-                                         const Normals &nm, pointer pcloud = NULL);
-extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
-                                         const Normals &nm, pointer pcloud = NULL);
+  rot = makematrix (ctx, 3, 3);
+  vpush (rot); pc++;
+  {
+    eusfloat_t *fv = rot->c.ary.entity->c.fvec.fv;
+    fv[0] = tma (0, 0); fv[1] = tma (0, 1); fv[2] = tma (0, 2);
+    fv[3] = tma (1, 0); fv[4] = tma (1, 1); fv[5] = tma (1, 2);
+    fv[6] = tma (2, 0); fv[7] = tma (2, 1); fv[8] = tma (2, 2);
+  }
+
+  pointer ret = make_eus_coordinates (ctx, pos, rot);
+  while (pc-- > 0) vpop();
+
+  return ret;
+}
+
+inline Eigen::Matrix4f convert_coordinates_to_eigenmatrix (register context *ctx, pointer coords) {
+  pointer pos = get_from_pointcloud(ctx, coords, K_EUSPCL_POS);
+  pointer rot = get_from_pointcloud(ctx, coords, K_EUSPCL_ROT);
+
+  Eigen::Matrix4f tma;
+
+  tma (0, 3) = pos->c.fvec.fv[0];
+  tma (1, 3) = pos->c.fvec.fv[1];
+  tma (2, 3) = pos->c.fvec.fv[2];
+
+  {
+    eusfloat_t *fv = rot->c.ary.entity->c.fvec.fv;
+    tma (0, 0) = fv[0]; tma (0, 1) = fv[1]; tma (0, 2) = fv[2];
+    tma (1, 0) = fv[3]; tma (1, 1) = fv[4]; tma (1, 2) = fv[5];
+    tma (2, 0) = fv[6]; tma (2, 1) = fv[7]; tma (2, 2) = fv[8];
+  }
+
+  tma(3, 0) = 0.0; tma(3, 1) = 0.0; tma(3, 2) = 0.0; tma(3, 3) = 1.0;
+
+  return tma;
+}
 #endif

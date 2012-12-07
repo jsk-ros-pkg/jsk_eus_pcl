@@ -2,14 +2,14 @@
 #include "eus_pcl/euspcl_filters.h"
 
 #define DOWNSAMPLE_(PTYPE, leaf_x, leaf_y, leaf_z) \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud = \
+  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
-  pcl::PointCloud< PTYPE > pcl_cloud_filtered; \
-  pcl::VoxelGrid< PTYPE > vg; \
-  vg.setInputCloud ( pcl_cloud ); \
-  vg.setLeafSize ( leaf_x, leaf_y, leaf_z ); \
-  vg.filter ( pcl_cloud_filtered ); \
-  ret = make_pointcloud_from_pcl ( ctx, pcl_cloud_filtered ); \
+  pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
+  pcl::VoxelGrid< PTYPE > vg;                                           \
+  vg.setInputCloud ( pcl_cloud );                                       \
+  vg.setLeafSize ( leaf_x, leaf_y, leaf_z );                            \
+  vg.filter ( pcl_cloud_filtered );                                     \
+  ret = make_pointcloud_from_pcl ( ctx, pcl_cloud_filtered );           \
   vpush(ret); pc++;
 
 pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
