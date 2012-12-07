@@ -3,7 +3,7 @@
 
 #define ADD_NORMAL_(PTYPE, radius)                                      \
   pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, NULL, width, height); \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, NULL, NULL, width, height); \
   pcl::NormalEstimation< PTYPE, PNormal > no_est;                       \
   no_est.setInputCloud (pcl_cloud);                                     \
   //                                                                    \

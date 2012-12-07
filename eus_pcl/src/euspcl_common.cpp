@@ -15,7 +15,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
   int pc = 0;
 
   pcl::PointCloud< Point >::Ptr ptr =
-    make_pcl_pointcloud< Point > (ctx, points, NIL, NIL, width, height);
+    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
   // process
   pcl::PCA< Point > pca;

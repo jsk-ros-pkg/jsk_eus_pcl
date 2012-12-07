@@ -50,14 +50,14 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
     }
   }
 
-  if ( have_position && have_rgb && have_normal ) {
-    READ_PCD_ ( PointCN );
-  } else if ( have_position && have_rgb ) {
-    READ_PCD_ ( PointC );
-  } else if ( have_position && have_normal ) {
-    READ_PCD_ ( PointN );
-  } else if ( have_position ) {
-    READ_PCD_ ( Point );
+  if (have_position && have_rgb && have_normal) {
+    READ_PCD_ (PointCN);
+  } else if (have_position && have_rgb) {
+    READ_PCD_ (PointC);
+  } else if (have_position && have_normal) {
+    READ_PCD_ (PointN);
+  } else if (have_position) {
+    READ_PCD_ (Point);
   } else {
     // no points
   }
@@ -66,17 +66,17 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
   return ret;
 }
 
-#define WRITE_PCD_(PTYPE, fname)                  \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud = \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
+#define WRITE_PCD_(PTYPE, fname)                                        \
+  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   pcl::PCDWriter wt;                                                    \
-  wt.write < PTYPE > ( fname, *pcl_cloud, binary );
+  wt.write < PTYPE > (fname, *pcl_cloud, binary);
 
 pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
   /* pointcloud fname &optional (binary t) */
   bool binary = true;
   pointer in_cloud;
-  pointer points,colors,normals;
+  pointer points, colors, normals, curvatures;
   numunion nu;
   int pc = 0;
   std::string fname;
@@ -101,6 +101,7 @@ pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
   points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
   colors = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_COLORS);
   normals = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
 
   if ( points != NIL && colors != NIL && normals != NIL ) {
     WRITE_PCD_(PointCN, fname);
@@ -115,6 +116,5 @@ pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
   }
 
   while ( pc-- > 0) vpop();
-
   return T;
 }

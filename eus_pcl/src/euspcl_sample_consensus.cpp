@@ -3,17 +3,18 @@
 
 #define SAC_SEGMENTATION_(PTYPE) \
   pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   pcl::PointCloud< PTYPE > ret_pcl_cloud;                               \
   pcl::SACSegmentation< PTYPE > seg;                                    \
+  //pcl::SACSegmentationFromNormals< PTYPE, PTYPE > seg;                \
   pcl::ModelCoefficients::Ptr out_coefficients (new pcl::ModelCoefficients); \
   pcl::PointIndices::Ptr out_inliers (new pcl::PointIndices);           \
-  seg.setOptimizeCoefficients (true);                                   \
-  seg.setModelType (pcl::SACMODEL_CYLINDER);                            \
+  seg.setOptimizeCoefficients (optimize_coeff);                         \
+  seg.setModelType (sac_model_type);                                    \
   //seg.setNormalDistanceWeight (0.1);                                  \
-  seg.setMethodType (pcl::SAC_RANSAC);                                  \
-  seg.setMaxIterations (10000);                                         \
-  seg.setDistanceThreshold (0.05);                                      \
+  seg.setMethodType (sac_method_type);                                  \
+  seg.setMaxIterations (sac_max_iter);                                  \
+  seg.setDistanceThreshold (sac_distance_thre);                         \
   seg.setRadiusLimits (0, 0.1);                                         \
   seg.setInputCloud (pcl_cloud);                                        \
   seg.segment (*out_inliers, *out_coefficients);                        \
@@ -21,46 +22,31 @@
   pcl::ExtractIndices< PTYPE > extract;                                 \
   extract.setInputCloud (pcl_cloud);                                    \
   extract.setIndices (out_inliers);                                     \
-  extract.setNegative (false);                                          \
+  extract.setNegative (extract_negative);                               \
   extract.filter (ret_pcl_cloud);                                       \
   ret = make_pointcloud_from_pcl ( ctx, ret_pcl_cloud );                \
   vpush(ret); pc++;
 
 #define SAC_SEGMENTATION_WITH_NORMAL_(PTYPE) \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
-  pcl::PointCloud< PTYPE > ret_pcl_cloud;                               \
-  pcl::SACSegmentationFromNormals< PTYPE, PTYPE > seg;                        \
-  pcl::ModelCoefficients::Ptr out_coefficients (new pcl::ModelCoefficients); \
-  pcl::PointIndices::Ptr out_inliers (new pcl::PointIndices);           \
-  seg.setOptimizeCoefficients (true);                                   \
-  seg.setModelType (pcl::SACMODEL_CYLINDER);                            \
-  seg.setNormalDistanceWeight (0.1);                                    \
-  seg.setMethodType (pcl::SAC_RANSAC);                                  \
-  seg.setMaxIterations (10000);                                         \
-  seg.setDistanceThreshold (0.05);                                      \
-  seg.setRadiusLimits (0, 0.1);                                         \
-  seg.setInputCloud (pcl_cloud);                                        \
-  seg.segment (*out_inliers, *out_coefficients);                        \
-  std::cerr << ";; Cylinder coefficients: " << *out_coefficients << std::endl; \
-  pcl::ExtractIndices< PTYPE > extract;                                 \
-  extract.setInputCloud (pcl_cloud);                                    \
-  extract.setIndices (out_inliers);                                     \
-  extract.setNegative (false);                                          \
-  extract.filter (ret_pcl_cloud);                                       \
-  ret = make_pointcloud_from_pcl ( ctx, ret_pcl_cloud );                \
-  vpush(ret); pc++;
+
 
 pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
+  /* (pointcloud &optional (model_type) (method_type) */
   pointer in_cloud;
-  pointer points, colors, normals;
+  pointer points, colors, normals, curvatures;
   pointer ret = NIL;
   numunion nu;
   int pc = 0;
-  // model_type, method_type, max_iter, distance_thre,
-  // radius_limit, optimize, negative, return_indices
-  // with_normal, normal_weight
-  // return model_coefficient
+  pcl::SacModel sac_model_type = pcl::SACMODEL_PLANE;
+  int sac_method_type = pcl::SAC_RANSAC;
+  eusinteger_t sac_max_iter = 10000;
+  eusfloat_t sac_radius_limit;
+  eusfloat_t sac_distance_thre = 0.05;
+  bool optimize_coeff = true;
+  bool extract_negative = false;
+  bool with_normal, normal_weight;
+  bool return_model_coefficient, return_indices;
+
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
     return ret;
@@ -72,6 +58,7 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
   colors = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_COLORS);
   normals = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
 
   if ( points != NIL && colors != NIL && normals != NIL ) {
     SAC_SEGMENTATION_(PointCN);

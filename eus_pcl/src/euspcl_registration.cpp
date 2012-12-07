@@ -38,9 +38,9 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   int pc = 0;
 
   Points::Ptr a_ptr =
-    make_pcl_pointcloud< Point > (ctx, a_points, NULL, NULL, a_width, a_height);
+    make_pcl_pointcloud< Point > (ctx, a_points, NULL, NULL, NULL, a_width, a_height);
   Points::Ptr b_ptr =
-    make_pcl_pointcloud< Point > (ctx, b_points, NULL, NULL, b_width, b_height);
+    make_pcl_pointcloud< Point > (ctx, b_points, NULL, NULL, NULL, b_width, b_height);
 
   pcl::Registration< Point, Point, float >::Ptr icp;
 

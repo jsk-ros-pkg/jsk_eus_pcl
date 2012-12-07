@@ -1,21 +1,21 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_filters.h"
 
-#define DOWNSAMPLE_(PTYPE, leaf_x, leaf_y, leaf_z) \
+#define DOWNSAMPLE_(PTYPE) \
   pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
   pcl::VoxelGrid< PTYPE > vg;                                           \
-  vg.setInputCloud ( pcl_cloud );                                       \
-  vg.setLeafSize ( leaf_x, leaf_y, leaf_z );                            \
-  vg.filter ( pcl_cloud_filtered );                                     \
-  ret = make_pointcloud_from_pcl ( ctx, pcl_cloud_filtered );           \
+  vg.setInputCloud (pcl_cloud);                                         \
+  vg.setLeafSize (leaf_x, leaf_y, leaf_z);                              \
+  vg.filter (pcl_cloud_filtered);                                       \
+  ret = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered);             \
   vpush(ret); pc++;
 
 pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   /* pointcloud &optional (leaf_x 0.02) (leaf_y 0.02) (leaf_z 0.02) */
   pointer in_cloud;
-  pointer points,colors,normals;
+  pointer points,colors,normals, curvatures;
   pointer ret = NIL;
   eusfloat_t leaf_x, leaf_y, leaf_z;
   numunion nu;
@@ -47,15 +47,16 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
   colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
   normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
 
   if ( points != NIL && colors != NIL && normals != NIL ) {
-    DOWNSAMPLE_(PointCN, leaf_x, leaf_y, leaf_z);
+    DOWNSAMPLE_(PointCN);
   } else if ( points != NIL && colors != NIL ) {
-    DOWNSAMPLE_(PointC, leaf_x, leaf_y, leaf_z);
+    DOWNSAMPLE_(PointC);
   } else if ( points != NIL && normals != NIL ) {
-    DOWNSAMPLE_(PointN, leaf_x, leaf_y, leaf_z);
+    DOWNSAMPLE_(PointN);
   } else if ( points != NIL ) {
-    DOWNSAMPLE_(Point, leaf_x, leaf_y, leaf_z);
+    DOWNSAMPLE_(Point);
   } else {
     // warning there is no points.
   }
@@ -66,7 +67,7 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
 
 #define EXTRACT_INDICES_(PTYPE) \
   pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
   pcl::ExtractIndices< PTYPE > ext_ind;                                 \
   ext_ind.setInputCloud (pcl_cloud);                                    \
@@ -83,7 +84,7 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
 pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
   /* pointcloud indices &optional (negative nil) (create t) */
   pointer in_cloud;
-  pointer points, colors, normals;
+  pointer points, colors, normals, curvatures;
   pointer ret = NIL;
   pointer eus_indices;
   bool pcl_negative = false;
@@ -132,6 +133,7 @@ pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
   colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
   normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
 
   if (points != NIL && colors != NIL && normals != NIL) {
     EXTRACT_INDICES_(PointCN);

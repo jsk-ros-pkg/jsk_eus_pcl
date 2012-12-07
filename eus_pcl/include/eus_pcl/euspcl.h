@@ -69,14 +69,16 @@ namespace pcl {
   typedef std::vector< int > Indices;
 }
 
-extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
+extern pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
 extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 extern pointer EUSPCL_CLS_PTS;
 
 extern pointer eval_c_string (register context *ctx, const char *strings);
-extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col, pointer nom);
+extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col,
+                                    pointer nom, pointer cuv);
 extern pointer make_eus_pointcloud (register context *ctx, pointer pcloud,
-                                    pointer pos, pointer col, pointer nom);
+                                    pointer pos, pointer col, pointer nom, pointer cuv);
 extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
 
 extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud = NULL);
@@ -89,7 +91,7 @@ extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &p
                                          const Normals &nm, pointer pcloud = NULL);
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
-                                          int width, int height, Points &pt) {
+                                          eusfloat_t *cvt, int width, int height, Points &pt) {
   pt.width    = width;
   pt.height   = height;
   pt.is_dense = false;
@@ -105,7 +107,7 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
 }
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
-                                          int width, int height, Normals &pt) {
+                                          eusfloat_t *cvt, int width, int height, Normals &pt) {
   pt.width    = width;
   pt.height   = height;
   pt.is_dense = false;
@@ -116,12 +118,13 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
       pt.points[i].normal[0] = *src++;
       pt.points[i].normal[1] = *src++;
       pt.points[i].normal[2] = *src++;
+      if (cvt != NULL) pt.points[i].curvature = *cvt++;
     }
   }
 }
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
-                                          int width, int height, PointsN &pt) {
+                                          eusfloat_t *cvt, int width, int height, PointsN &pt) {
   pt.width    = width;
   pt.height   = height;
   pt.is_dense = false;
@@ -138,13 +141,13 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
       pt.points[i].normal[0] = *nm++;
       pt.points[i].normal[1] = *nm++;
       pt.points[i].normal[2] = *nm++;
-      //if (cvt != NULL)  pt.points[i].curvature = *cvt++;
+      if (cvt != NULL) pt.points[i].curvature = *cvt++;
     }
   }
 }
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
-                                          int width, int height, PointsC &pt) {
+                                          eusfloat_t *cvt, int width, int height, PointsC &pt) {
   pt.width    = width;
   pt.height   = height;
   pt.is_dense = false;
@@ -169,7 +172,7 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
   }
 }
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
-                                          int width, int height, PointsCN &pt) {
+                                          eusfloat_t *cvt, int width, int height, PointsCN &pt) {
   pt.width    = width;
   pt.height   = height;
   pt.is_dense = false;
@@ -197,6 +200,7 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
       pt.points[i].normal[0] = *nm++;
       pt.points[i].normal[1] = *nm++;
       pt.points[i].normal[2] = *nm++;
+      if (cvt != NULL) pt.points[i].curvature = *cvt++;
     }
   }
 }
@@ -205,17 +209,19 @@ template < typename PTS >
 inline typename pcl::PointCloud<PTS>::Ptr
 make_pcl_pointcloud (register context *ctx,
                      pointer points, pointer colors, pointer normals,
-                     int width, int height) {
+                     pointer curvatures, int width, int height) {
 
   typename pcl::PointCloud< PTS >::Ptr pcl_cloud ( new  pcl::PointCloud< PTS > );
 
   fvector2pcl_pointcloud(points == NULL ? NULL :
-                         ( points == NIL ? NULL : points->c.ary.entity->c.fvec.fv ),
+                         (points == NIL ? NULL : points->c.ary.entity->c.fvec.fv),
                          colors == NULL ? NULL :
-                         ( colors == NIL ? NULL : colors->c.ary.entity->c.fvec.fv ),
+                         (colors == NIL ? NULL : colors->c.ary.entity->c.fvec.fv),
                          normals == NULL ? NULL :
-                         ( normals == NIL ? NULL : normals->c.ary.entity->c.fvec.fv ),
-                         width, height, *pcl_cloud );
+                         (normals == NIL ? NULL : normals->c.ary.entity->c.fvec.fv),
+                         curvatures == NULL ? NULL :
+                         (curvatures == NIL ? NULL : curvatures->c.fvec.fv),
+                         width, height, *pcl_cloud);
 
   return pcl_cloud;
 }

@@ -89,7 +89,7 @@ pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
   pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
 
   pcl::PointCloud< Point >::Ptr ptr =
-    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, width, height);
+    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
   pcl::PointCloud< Point >::Ptr cloud_hull (new pcl::PointCloud<Point>);
   pcl::ConvexHull< Point > chull;

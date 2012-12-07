@@ -55,7 +55,7 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 }
 
 pointer make_eus_pointcloud(register context *ctx,
-                            pointer pos, pointer col, pointer nom) {
+                            pointer pos, pointer col, pointer nom, pointer cuv) {
   register pointer *local = ctx->vsp;
   pointer w, name;
   int pc;
@@ -80,6 +80,10 @@ pointer make_eus_pointcloud(register context *ctx,
     local[pc++] = K_EUSPCL_NORMALS;
     local[pc++] = nom;
   }
+  if (cuv != NIL) {
+    local[pc++] = K_EUSPCL_CURVATURES;
+    local[pc++] = cuv;
+  }
   ctx->vsp = local + pc;
   w = (pointer)SEND (ctx, pc, local); /* send :init */
 
@@ -87,8 +91,8 @@ pointer make_eus_pointcloud(register context *ctx,
   return (w);
 }
 
-pointer make_eus_pointcloud(register context *ctx,
-                            pointer pcloud, pointer pos, pointer col, pointer nom) {
+pointer make_eus_pointcloud(register context *ctx, pointer pcloud,
+                            pointer pos, pointer col, pointer nom, pointer cuv) {
   if (pos != NIL) {
     set_to_pointcloud(ctx, pcloud, K_EUSPCL_POINTS, pos);
   }
@@ -97,6 +101,9 @@ pointer make_eus_pointcloud(register context *ctx,
   }
   if (nom != NIL) {
     set_to_pointcloud(ctx, pcloud, K_EUSPCL_NORMALS, nom);
+  }
+  if (cuv != NIL) {
+    set_to_pointcloud(ctx, pcloud, K_EUSPCL_CURVATURES, cuv);
   }
 
   return pcloud;
@@ -151,13 +158,12 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, point
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pos, NIL, NIL, NIL);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, NIL, NIL);
   }
 
   while (pc-- > 0) vpop();
-
   return retp;
 }
 
@@ -192,16 +198,21 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, poin
     }
   }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, col, NIL);
-  while (pc-- > 0) vpop();
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, NIL, NIL);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, NIL, NIL);
+  }
 
+  while (pc-- > 0) vpop();
   return retp;
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
-  pointer pos = NIL, nom = NIL;
+  pointer pos = NIL, nom = NIL, cuv = NIL;
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
@@ -216,27 +227,35 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, poin
   }
 
   nom = makematrix (ctx, len, 3);
+  cuv = makefvector (len);
   vpush (nom); pc++;
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (PointsN::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
+      *cfv++ = it->curvature;
     }
   }
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, NIL, nom, cuv);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, nom, cuv);
+  }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, NIL, nom);
   while (pc-- > 0) vpop();
-
   return retp;
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
-  pointer pos = NIL, col = NIL, nom = NIL;
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
@@ -265,20 +284,29 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, poi
   }
 
   nom = makematrix (ctx, len, 3);
+  cuv = makefvector (len);
   vpush (nom); pc++;
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (PointsCN::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
+      *cfv++ = it->curvature;
     }
   }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
-  while (pc-- > 0) vpop();
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+  }
 
+  while (pc-- > 0) vpop();
   return retp;
 }
 
@@ -286,7 +314,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
                                   const Normals &nm, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
-  pointer pos = NIL, col = NIL, nom = NIL;
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
@@ -301,20 +329,29 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
   }
 
   nom = makematrix (ctx, len, 3);
+  cuv = makefvector (len);
   vpush (nom); pc++;
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (Normals::const_iterator it = nm.begin();
          it != nm.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
+      *cfv++ = it->curvature;
     }
   }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
-  while (pc-- > 0) vpop();
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+  }
 
+  while (pc-- > 0) vpop();
   return retp;
 }
 
@@ -322,7 +359,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
                                   const Normals &nm, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
-  pointer pos = NIL, col = NIL, nom = NIL;
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
@@ -351,20 +388,29 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
   }
 
   nom = makematrix (ctx, len, 3);
+  cuv = makefvector (len);
   vpush (nom); pc++;
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (Normals::const_iterator it = nm.begin();
          it != nm.end(); it++) {
       *fv++ = it->normal_x;
       *fv++ = it->normal_y;
       *fv++ = it->normal_z;
+      *cfv++ = it->curvature;
     }
   }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, col, nom);
-  while (pc-- > 0) vpop();
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+  }
 
+  while (pc-- > 0) vpop();
   return retp;
 }
 
@@ -372,7 +418,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
 #define MACRO_TEMPLATE_ (PTYPE, args)
 {
   pcl::PointCloud< PTYPE >::Ptr ptr =
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height);
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height);
 
   // process
 
@@ -387,6 +433,7 @@ inline pointer process (register context *ctx, pointer in_cloud) {
   pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
   pointer colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
   pointer normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  pointer curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
   pointer ret = NIL;
   int pc = 0;
 
@@ -456,9 +503,11 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   K_EUSPCL_POINTS = defkeyword (ctx, (char *)"POINTS");
   K_EUSPCL_COLORS = defkeyword (ctx, (char *)"COLORS");
   K_EUSPCL_NORMALS = defkeyword (ctx, (char *)"NORMALS");
+  K_EUSPCL_CURVATURES = defkeyword (ctx, (char *)"CURVATURES");
   K_EUSPCL_WIDTH = defkeyword (ctx, (char *)"WIDTH");
   K_EUSPCL_HEIGHT = defkeyword (ctx, (char *)"HEIGHT");
   K_EUSPCL_POS = defkeyword (ctx, (char *)"POS");
   K_EUSPCL_ROT = defkeyword (ctx, (char *)"ROT");
+
   return 0;
 }

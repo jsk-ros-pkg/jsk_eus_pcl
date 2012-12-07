@@ -38,7 +38,7 @@ pointer EXTRACT_EUCLIDEAN_CLUSTERS (register context *ctx, int n, pointer *argv)
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
 
   pcl::PointCloud< Point >::Ptr pcl_cloud =
-    make_pcl_pointcloud< Point > (ctx, points, NIL, NIL, width, height);
+    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
   pcl::search::KdTree< Point >::Ptr tree (new pcl::search::KdTree< Point > ());
   tree->setInputCloud (pcl_cloud); //??
