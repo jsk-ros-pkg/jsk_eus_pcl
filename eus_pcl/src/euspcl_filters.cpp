@@ -24,7 +24,8 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   leaf_x = 0.02;
   leaf_y = 0.02;
   leaf_z = 0.02;
-  ckarg2(1, 4);
+
+  ckarg2 (1, 4);
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
     return ret;
@@ -41,11 +42,11 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
     leaf_z = ( fltval(argv[3]) ) / 1000.0;
   }
 
-  int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
-  int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
-  points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
-  colors = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_COLORS);
-  normals = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
+  normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
 
   if ( points != NIL && colors != NIL && normals != NIL ) {
     DOWNSAMPLE_(PointCN, leaf_x, leaf_y, leaf_z);
@@ -60,5 +61,90 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   }
 
   while ( pc-- > 0) vpop();
+  return ret;
+}
+
+#define EXTRACT_INDICES_(PTYPE) \
+  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, width, height); \
+  pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
+  pcl::ExtractIndices< PTYPE > ext_ind;                                 \
+  ext_ind.setInputCloud (pcl_cloud);                                    \
+  ext_ind.setIndices (pcl_indices);                                     \
+  ext_ind.setNegative (pcl_negative);                                   \
+  ext_ind.filter (pcl_cloud_filtered);                                  \
+  if (create_cloud) {                                                   \
+    ret = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered);           \
+    vpush(ret); pc++;                                                   \
+  } else {                                                              \
+    ret = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered, in_cloud); \
+  }
+
+pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
+  /* pointcloud indices &optional (negative nil) (create t) */
+  pointer in_cloud;
+  pointer points, colors, normals;
+  pointer ret = NIL;
+  pointer eus_indices;
+  bool pcl_negative = false;
+  bool create_cloud = true;
+  numunion nu;
+  int pc = 0;
+
+  ckarg2 (2, 4);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return ret;
+  }
+  in_cloud = argv[0];
+
+  eus_indices = argv[1];
+
+  if (n > 2) {
+    pcl_negative = true;
+  }
+
+  pcl::IndicesPtr pcl_indices (new pcl::Indices());
+  if (isintvector(eus_indices)) {
+    // intvec
+    size_t vsize = vecsize(eus_indices);
+    pcl_indices->resize(vsize);
+    for(size_t i = 0; i < vsize; i++) {
+      (*pcl_indices)[i] = eus_indices->c.ivec.iv[i];
+    }
+  } else if (iscons(eus_indices)) {
+    // list
+    pointer tmp = eus_indices;
+    pcl_indices->resize(0);
+    while (tmp != NIL) {
+      pointer i = ccar(tmp);
+      if (isint (i)) {
+        pcl_indices->push_back (intval(i));
+      }
+      tmp = ccdr(tmp);
+    }
+  } else {
+    error(E_TYPEMISMATCH);
+  }
+
+  int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
+  normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+
+  if (points != NIL && colors != NIL && normals != NIL) {
+    EXTRACT_INDICES_(PointCN);
+  } else if (points != NIL && colors != NIL) {
+    EXTRACT_INDICES_(PointC);
+  } else if (points != NIL && normals != NIL) {
+    EXTRACT_INDICES_(PointN);
+  } else if (points != NIL) {
+    EXTRACT_INDICES_(Point);
+  } else {
+    // warning there is no points.
+  }
+
+  while (pc-- > 0) vpop();
   return ret;
 }

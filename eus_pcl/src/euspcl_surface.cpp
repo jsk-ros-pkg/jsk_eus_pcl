@@ -1,7 +1,6 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_surface.h"
 
-//pointer HOGE (register context *ctx, int n, pointer *argv) { return NIL; }
 #if 0
 int concave_plane(eusfloat_t *src, int ssize,
                   eusfloat_t *coeff, eusfloat_t alpha, eusfloat_t *ret) {
@@ -82,7 +81,7 @@ int convex_plane(eusfloat_t *src, int ssize,
 }
 #endif
 
-extern pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
+pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
   pointer in_cloud = argv[0];
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -101,7 +100,11 @@ extern pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
   return make_pointcloud_from_pcl (ctx, *cloud_hull);
 }
 
-extern pointer PCL_CONVEX_HULL_PLANE
+pointer PCL_CONVEX_HULL_PLANE
 (register context *ctx, int n, pointer *argv) {
 
 }
+
+pointer PCL_CONCAVE_HULL (register context *ctx, int n, pointer *argv) { }
+
+pointer PCL_CONCAVE_HULL_PLANE (register context *ctx, int n, pointer *argv) { }

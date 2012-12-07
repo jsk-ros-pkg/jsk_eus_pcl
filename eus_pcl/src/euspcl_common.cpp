@@ -31,7 +31,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
     //printf("%f %f %f %f\n", mean[0], mean[1], mean[2], mean[3]);
     eusfloat_t *fv = tmp->c.fvec.fv;
     fv[0] = mean[0]; fv[1] = mean[1];  fv[2] = mean[2];
-    ret = cons (ctx, tmp, ret);
+    ret = rawcons (ctx, tmp, ret);
     vpush (ret); pc++;
   }
   {
@@ -42,7 +42,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
     //printf("%f %f %f\n", vec[0], vec[1], vec[2]);
     eusfloat_t *fv = tmp->c.fvec.fv;
     fv[0] = vec[0]; fv[1] = vec[1];  fv[2] = vec[2];
-    ret = cons (ctx, tmp, ret);
+    ret = rawcons (ctx, tmp, ret);
     vpush (ret); pc++;
   }
   {
@@ -59,7 +59,7 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
     fv[0] = data[0]; fv[1] = data[3]; fv[2] = data[6];
     fv[3] = data[1]; fv[4] = data[4]; fv[5] = data[7];
     fv[6] = data[2]; fv[7] = data[5]; fv[8] = data[8];
-    ret = cons (ctx, tmp, ret);
+    ret = rawcons (ctx, tmp, ret);
     vpush (ret); pc++;
   }
 

@@ -60,6 +60,7 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   // model_type, method_type, max_iter, distance_thre,
   // radius_limit, optimize, negative, return_indices
   // with_normal, normal_weight
+  // return model_coefficient
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
     return ret;

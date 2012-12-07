@@ -87,6 +87,21 @@ pointer make_eus_pointcloud(register context *ctx,
   return (w);
 }
 
+pointer make_eus_pointcloud(register context *ctx,
+                            pointer pcloud, pointer pos, pointer col, pointer nom) {
+  if (pos != NIL) {
+    set_to_pointcloud(ctx, pcloud, K_EUSPCL_POINTS, pos);
+  }
+  if (col != NIL) {
+    set_to_pointcloud(ctx, pcloud, K_EUSPCL_COLORS, col);
+  }
+  if (nom != NIL) {
+    set_to_pointcloud(ctx, pcloud, K_EUSPCL_NORMALS, nom);
+  }
+
+  return pcloud;
+}
+
 pointer make_eus_coordinates (register context *ctx,
                               pointer pos, pointer rot) {
   register pointer *local = ctx->vsp;
@@ -117,7 +132,7 @@ pointer make_eus_coordinates (register context *ctx,
   return (w);
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt ) {
+pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL;
@@ -134,13 +149,19 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt ) {
     }
   }
 
-  pointer retp = make_eus_pointcloud (ctx, pos, NIL, NIL);
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, NIL, NIL);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, NIL);
+  }
+
   while (pc-- > 0) vpop();
 
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt ) {
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL;
@@ -177,7 +198,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt ) {
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt ) {
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, nom = NIL;
@@ -212,7 +233,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt ) {
   return retp;
 }
 
-pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL;
@@ -262,7 +283,7 @@ pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt ) {
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
-                                  const Normals &nm) {
+                                  const Normals &nm, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL;
@@ -298,7 +319,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
-                                  const Normals &nm) {
+                                  const Normals &nm, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL;
@@ -406,9 +427,13 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
 
   // euspcl_filters.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
+  defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES);
 
   // euspcl_features.cpp
   defun (ctx, (char *)"ADD_NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
+
+  // euspcl_registration.cpp
+  defun (ctx, (char *)"ICP_RAW", argv[0], (pointer (*)())PCL_ICP_RAW);
 
   // euspcl_sample_consensus.cpp
   defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION);
@@ -416,6 +441,10 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_segmentation.cpp
   defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],
          (pointer (*)())EXTRACT_EUCLIDEAN_CLUSTERS);
+
+  // euspcl_surface.cpp
+  defun (ctx, (char *)"CONVEX-HULL", argv[0], (pointer (*)())PCL_CONVEX_HULL);
+  defun (ctx, (char *)"CONVEX-HULL-PLANE", argv[0], (pointer (*)())PCL_CONVEX_HULL_PLANE);
 
 #ifdef USE_PACKAGE
   // reset package

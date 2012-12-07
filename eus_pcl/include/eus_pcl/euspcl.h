@@ -65,6 +65,10 @@ typedef pcl::PointCloud< PointN >  PointsN;
 typedef pcl::PointCloud< PointC >  PointsC;
 typedef pcl::PointCloud< PointCN > PointsCN;
 
+namespace pcl {
+  typedef std::vector< int > Indices;
+}
+
 extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
 extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 extern pointer EUSPCL_CLS_PTS;
@@ -238,16 +242,18 @@ inline bool isPointCloud (pointer p) {
     return false;
 }
 
-extern pointer eval_c_string(register context *ctx, const char *strings);
-extern pointer make_eus_pointcloud(register context *ctx, pointer pos, pointer col, pointer nom);
+extern pointer eval_c_string (register context *ctx, const char *strings);
+extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col, pointer nom);
+extern pointer make_eus_pointcloud (register context *ctx, pointer pcloud,
+                                    pointer pos, pointer col, pointer nom);
 extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
 
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsN &pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsCN &pt );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const Points &pt,
-                                          const Normals &nm );
-extern pointer make_pointcloud_from_pcl ( register context *ctx, const PointsC &pt,
-                                          const Normals &nm );
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                         const Normals &nm, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
+                                         const Normals &nm, pointer pcloud = NULL);
 #endif
