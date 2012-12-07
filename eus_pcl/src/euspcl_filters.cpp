@@ -33,13 +33,13 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   in_cloud = argv[0];
 
   if ( n > 1 ) {
-    leaf_x = ( fltval(argv[1]) ) / 1000.0;
+    leaf_x = (fltval(argv[1])) / 1000.0;
   }
   if ( n > 2 ) {
-    leaf_y = ( fltval(argv[2]) ) / 1000.0;
+    leaf_y = (fltval(argv[2])) / 1000.0;
   }
   if ( n > 3 ) {
-    leaf_z = ( fltval(argv[3]) ) / 1000.0;
+    leaf_z = (fltval(argv[3])) / 1000.0;
   }
 
   int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -102,7 +102,14 @@ pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
   eus_indices = argv[1];
 
   if (n > 2) {
-    pcl_negative = true;
+    if (argv[2] != NIL) {
+      pcl_negative = true;
+    }
+  }
+  if (n > 3) {
+    if (argv[3] == NIL) {
+      create_cloud = false;
+    }
   }
 
   pcl::IndicesPtr pcl_indices (new pcl::Indices());

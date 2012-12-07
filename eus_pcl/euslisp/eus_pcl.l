@@ -1,5 +1,34 @@
 (load "../lib/eus_pcl.so")
 
+;; pcl::SacModel
+(defvar pcl::*SACMODEL_PLANE* 0)
+(defvar pcl::*SACMODEL_LINE*  1)
+(defvar pcl::*SACMODEL_CIRCLE2D* 2)
+(defvar pcl::*SACMODEL_CIRCLE3D* 3)
+(defvar pcl::*SACMODEL_SPHERE* 4)
+(defvar pcl::*SACMODEL_CYLINDER* 5)
+(defvar pcl::*SACMODEL_CONE* 6)
+(defvar pcl::*SACMODEL_TORUS* 7)
+(defvar pcl::*SACMODEL_PARALLEL_LINE* 8)
+(defvar pcl::*SACMODEL_PERPENDICULAR_PLANE* 9)
+(defvar pcl::*SACMODEL_PARALLEL_LINES* 10)
+(defvar pcl::*SACMODEL_NORMAL_PLANE* 11)
+(defvar pcl::*SACMODEL_NORMAL_SPHERE* 12)
+(defvar pcl::*SACMODEL_REGISTRATION* 13)
+(defvar pcl::*SACMODEL_REGISTRATION_2D* 14)
+(defvar pcl::*SACMODEL_PARALLEL_PLANE* 15)
+(defvar pcl::*SACMODEL_NORMAL_PARALLEL_PLANE* 16)
+(defvar pcl::*SACMODEL_STICK* 17)
+
+;; method types
+(defvar pcl::*SAC_RANSAC*  0)
+(defvar pcl::*SAC_LMEDS*   1)
+(defvar pcl::*SAC_MSAC*    2)
+(defvar pcl::*SAC_RRANSAC* 3)
+(defvar pcl::*SAC_RMSAC*   4)
+(defvar pcl::*SAC_MLESAC*  5)
+(defvar pcl::*SAC_PROSAC*  6)
+
 ;; EUS_ICP_TYPE
 (defvar pcl::*REGIST_SVD*  0)
 (defvar pcl::*REGIST_NL*   1)

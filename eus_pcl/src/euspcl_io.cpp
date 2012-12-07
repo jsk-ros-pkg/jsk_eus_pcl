@@ -16,12 +16,12 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
   pointer ret = NIL;
   int pc = 0;
   bool have_rgb=false, have_normal=false, have_position=false;
-  if ( !isstring(argv[0]) ) {
+  if (!isstring(argv[0])) {
     error(E_NOSTRING);
   }
 
   std::string fname;
-  fname.assign( (char *) get_string(argv[0]));
+  fname.assign ((char *)get_string (argv[0]));
 
   {
     sensor_msgs::PointCloud2 hdr;
@@ -31,19 +31,19 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
     Eigen::Vector4f origin;
     Eigen::Quaternionf orientation;
     int pcd_version; int data_type; int data_index;
-    int ret = rd.readHeader(fname, hdr, origin, orientation, pcd_version, data_type, data_index);
+    int ret = rd.readHeader (fname, hdr, origin, orientation, pcd_version, data_type, data_index);
 #endif
-    if ( ret != 0 ) {
+    if (ret != 0) {
       std::cerr << ";; read header error" << std::endl;
     } else {
       for (size_t i = 0; i < hdr.fields.size(); i++) {
-        if ( hdr.fields[i].name == "rgb" ) {
+        if (hdr.fields[i].name == "rgb") {
           have_rgb = true;
         }
-        if ( hdr.fields[i].name == "normal_x" ) {
+        if (hdr.fields[i].name == "normal_x") {
           have_normal = true;
         }
-        if ( hdr.fields[i].name == "x" ) {
+        if (hdr.fields[i].name == "x") {
           have_position = true;
         }
       }
@@ -62,7 +62,7 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
     // no points
   }
 
-  while ( pc-- > 0) vpop();
+  while (pc-- > 0) vpop();
   return ret;
 }
 
@@ -88,12 +88,12 @@ pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
   }
   in_cloud = argv[0];
 
-  if ( ! isstring(argv[1]) ) error(E_NOSTRING);
+  if (!isstring(argv[1])) error(E_NOSTRING);
 
-  fname.assign( (char *)( argv[1]->c.str.chars ) );
+  fname.assign ((char *)(argv[1]->c.str.chars));
 
-  if ( n > 2 ) {
-    if ( argv[2] == NIL) binary = false;
+  if (n > 2) {
+    if (argv[2] == NIL) binary = false;
   }
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));

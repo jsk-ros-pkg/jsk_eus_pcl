@@ -22,15 +22,20 @@
     vpush(ret); pc++;                                                   \
   } else {                                                              \
     pointer nom = makematrix (ctx, len, 3);                             \
+    pointer cuv = makefvector (len, 3);                                 \
     vpush (nom); pc++;                                                  \
+    vpush (cuv); pc++;                                                  \
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;                      \
+    eusfloat_t *cfv = cuv->c.fvec.fv;                                   \
     for (Normals::const_iterator it = cloud_nm->begin();                \
          it != cloud_nm->end(); it++) {                                 \
       *fv++ = it->normal_x;                                             \
       *fv++ = it->normal_y;                                             \
       *fv++ = it->normal_z;                                             \
+      *cvf++ = it->curvature;                                           \
     }                                                                   \
     ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS, nom);      \
+    ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_CURVATURES, cuv);   \
   }
 
 pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
@@ -53,7 +58,9 @@ pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
     arg_rad = fltval (argv[1]);
   }
   if (n > 2) {
-    create_pc = true;
+    if (argv[2] != NIL) {
+      create_pc = true;
+    }
   }
 
   int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
