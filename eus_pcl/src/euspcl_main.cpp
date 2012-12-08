@@ -21,7 +21,8 @@ extern "C" {
 
 using namespace pcl;
 
-pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
+pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
 pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 pointer EUSPCL_CLS_PTS;
 
@@ -487,7 +488,8 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
 
   // euspcl_segmentation.cpp
   defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],
-         (pointer (*)())EXTRACT_EUCLIDEAN_CLUSTERS);
+         (pointer (*)())PCL_EXTRACT_EUCLIDEAN_CLUSTERS);
+  defun (ctx, (char *)"EXTRACT-PLANES", argv[0], (pointer (*)())PCL_EXTRACT_PLANES);
 
   // euspcl_surface.cpp
   defun (ctx, (char *)"CONVEX-HULL", argv[0], (pointer (*)())PCL_CONVEX_HULL);
