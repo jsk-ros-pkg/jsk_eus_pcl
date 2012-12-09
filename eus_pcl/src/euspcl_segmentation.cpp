@@ -164,7 +164,9 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
 #endif
     pcl::PointIndicesPtr pti (new pcl::PointIndices());
     {
+#if DEBUG
       std::cerr << ";; point_size: " << point_size << std::endl;
+#endif
       pcl::DefaultPointRepresentation<Point> pr;
       size_t cntr=0;
       for (Points::const_iterator it = pcl_cloud_ptr->begin();

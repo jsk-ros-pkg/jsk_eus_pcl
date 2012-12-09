@@ -6,5 +6,5 @@
 // eus functions
 extern pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv);
 extern pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv);
-
+extern pointer PCL_STEP_POINTCLOUD (register context *ctx, int n, pointer *argv);
 #endif

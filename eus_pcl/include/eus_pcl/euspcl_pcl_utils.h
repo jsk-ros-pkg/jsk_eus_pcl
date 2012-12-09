@@ -2,10 +2,10 @@
 #define __EUSPCL_PCL_UTIL_H__
 
 template < typename PTYPE >
-void filterPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
-                       pcl::PointCloud < PTYPE > &out_cloud,
-                       bool remove_nan, bool keep_organized,
-                       int xoffset, int yoffset, int xstep, int ystep) {
+void stepPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
+                     pcl::PointCloud < PTYPE > &out_cloud,
+                     bool remove_nan, bool keep_organized,
+                     int xoffset, int yoffset, int xstep, int ystep) {
 
   size_t xlength = in_cloud.width;
   size_t ylength = in_cloud.height;
@@ -14,13 +14,18 @@ void filterPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
   if (xstep >= 1 && ystep >= 1) {
     for (int ypos = yoffset; ypos < ylength; ypos += ystep) {
       for (int xpos = xoffset; xpos < xlength; xpos += xstep) {
-        PTYPE *it = &(in_cloud.points[ypos * xlength + xpos]);
+        PTYPE *it = &(in_cloud.points[(ypos * xlength) + xpos]);
         if (remove_nan) {
           if (!pr.isValid (*it)) {
-            if (keep_organized) out_cloud.points.push_back(new PTYPE());
+            if (keep_organized) {
+              PTYPE pt;
+              out_cloud.points.push_back(pt);
+            }
           } else {
             out_cloud.points.push_back(*it);
           }
+        } else {
+          out_cloud.points.push_back(*it);
         }
       }
     }
@@ -35,7 +40,10 @@ void filterPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
     for ( typename pcl::PointCloud< PTYPE >::const_iterator it = in_cloud.begin();
          it != in_cloud.end(); it++) {
       if (!pr.isValid (*it)) {
-        if (keep_organized) out_cloud.points.push_back(new PTYPE());
+        if (keep_organized) {
+          PTYPE pt;
+          out_cloud.points.push_back(pt);
+        }
       } else {
         out_cloud.points.push_back(*it);
       }

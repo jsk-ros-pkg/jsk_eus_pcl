@@ -22,7 +22,7 @@ extern "C" {
 using namespace pcl;
 
 pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
-pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT, K_EUSPCL_SIZE_CHANGE;
 pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 pointer EUSPCL_CLS_PTS;
 
@@ -56,7 +56,9 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 }
 
 pointer make_eus_pointcloud(register context *ctx,
-                            pointer pos, pointer col, pointer nom, pointer cuv) {
+                            pointer pos, pointer col, pointer nom, pointer cuv,
+                            int width, int height) {
+  std::cerr << "make eus pcloud0" << std::endl;
   register pointer *local = ctx->vsp;
   pointer w, name;
   int pc;
@@ -89,23 +91,31 @@ pointer make_eus_pointcloud(register context *ctx,
   w = (pointer)SEND (ctx, pc, local); /* send :init */
 
   ctx->vsp = local;
+
+  set_to_pointcloud (ctx, w, K_EUSPCL_SIZE_CHANGE,
+                     makeint (width), makeint (height));
+
   return (w);
 }
 
 pointer make_eus_pointcloud(register context *ctx, pointer pcloud,
-                            pointer pos, pointer col, pointer nom, pointer cuv) {
+                            pointer pos, pointer col, pointer nom, pointer cuv,
+                            int width, int height) {
+  std::cerr << "make eus pcloud1" << std::endl;
   if (pos != NIL) {
-    set_to_pointcloud(ctx, pcloud, K_EUSPCL_POINTS, pos);
+    set_to_pointcloud (ctx, pcloud, K_EUSPCL_POINTS, pos);
   }
   if (col != NIL) {
-    set_to_pointcloud(ctx, pcloud, K_EUSPCL_COLORS, col);
+    set_to_pointcloud (ctx, pcloud, K_EUSPCL_COLORS, col);
   }
   if (nom != NIL) {
-    set_to_pointcloud(ctx, pcloud, K_EUSPCL_NORMALS, nom);
+    set_to_pointcloud (ctx, pcloud, K_EUSPCL_NORMALS, nom);
   }
   if (cuv != NIL) {
-    set_to_pointcloud(ctx, pcloud, K_EUSPCL_CURVATURES, cuv);
+    set_to_pointcloud (ctx, pcloud, K_EUSPCL_CURVATURES, cuv);
   }
+  set_to_pointcloud (ctx, pcloud, K_EUSPCL_SIZE_CHANGE,
+                     makeint (width), makeint (height));
 
   return pcloud;
 }
@@ -159,9 +169,11 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, point
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, NIL, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pos, NIL, NIL, NIL,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, NIL, NIL,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -169,6 +181,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, point
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud) {
+  std::cerr << "make pcloud" << std::endl;
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL;
@@ -191,19 +204,21 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, poin
     eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
     for (PointsC::const_iterator it = pt.begin();
          it != pt.end(); it++) {
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
+      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>(&(it->rgb));
 
-      *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fv++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fv++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fv++ = ((int_rgb & 0x00FF0000) >> 16) / 255.0;
+      *fv++ = ((int_rgb & 0x0000FF00) >> 8 ) / 255.0;
+      *fv++ = ((int_rgb & 0x000000FF) >> 0 ) / 255.0;
     }
   }
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, col, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pos, col, NIL, NIL,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, col, NIL, NIL);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, NIL, NIL,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -244,9 +259,11 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, poin
   }
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, NIL, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pos, NIL, nom, cuv,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, NIL, nom, cuv,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -302,9 +319,11 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, poi
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -347,9 +366,11 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -406,9 +427,11 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
 
   pointer retp;
   if (pcloud == NULL) {
-    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
   } else {
-    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv);
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
   }
 
   while (pc-- > 0) vpop();
@@ -416,37 +439,46 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
 }
 
 #if 0
-#define MACRO_TEMPLATE_ (PTYPE, args)
-{
-  pcl::PointCloud< PTYPE >::Ptr ptr =
-    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height);
+#define MACRO_TEMPLATE_(PTYPE)                                          \
+  pcl::PointCloud< PTYPE >::Ptr ptr =                                   \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
+  pcl::PointCloud< PTYPE > ret_cloud;                                   \
+  // process                                                            \
+  if (create) {                                                         \
+    ret = make_pointcloud_from_pcl (ctx, ret_cloud);                    \
+    vpush(ret); pc++;                                                   \
+  } else {                                                              \
+    ret = make_pointcloud_from_pcl (ctx, ret_cloud, eus_in_cloud);      \
+    vpush (ret); pc++;                                                  \
+  }
 
-  // process
+pointer process (register context *ctx, int n, pointer *argv) {
+  pointer eus_in_cloud;
+  pointer ret = NIL;
+  int pc = 0;
+  numunion nu;
 
-  //
-  ret = make_pointcloud_from_pcl ( ctx, pcl_cloud_filtered );
-  vpush (ret); pc++;
-}
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+  }
+  eus_in_cloud = argv[0];
 
-inline pointer process (register context *ctx, pointer in_cloud) {
   int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
   int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
   pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
   pointer colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
   pointer normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
   pointer curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
-  pointer ret = NIL;
-  int pc = 0;
 
   // parse
-  if ( points != NIL && colors != NIL && normals != NIL ) {
-    MACRO_TEMPLATE_(PointCN, );
-  } else if ( points != NIL && colors != NIL ) {
-    MACRO_TEMPLATE_(PointC, );
-  } else if ( points != NIL && normals != NIL ) {
-    MACRO_TEMPLATE_(PointN, );
-  } else if ( points != NIL ) {
-    MACRO_TEMPLATE_(Point, );
+  if (points != NIL && colors != NIL && normals != NIL) {
+    MACRO_TEMPLATE_(PointCN);
+  } else if (points != NIL && colors != NIL) {
+    MACRO_TEMPLATE_(PointC);
+  } else if (points != NIL && normals != NIL) {
+    MACRO_TEMPLATE_(PointN);
+  } else if (points != NIL) {
+    MACRO_TEMPLATE_(Point);
   } else {
     // warning there is no points.
   }
@@ -472,6 +504,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_io.cpp
   defun (ctx, (char *)"READ-PCD", argv[0], (pointer (*)())PCL_READ_PCD);
   defun (ctx, (char *)"WRITE-PCD", argv[0], (pointer (*)())PCL_WRITE_PCD);
+  defun (ctx, (char *)"STEP-POINTCLOUD", argv[0], (pointer (*)())PCL_STEP_POINTCLOUD);
 
   // euspcl_filters.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
@@ -508,6 +541,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   K_EUSPCL_CURVATURES = defkeyword (ctx, (char *)"CURVATURES");
   K_EUSPCL_WIDTH = defkeyword (ctx, (char *)"WIDTH");
   K_EUSPCL_HEIGHT = defkeyword (ctx, (char *)"HEIGHT");
+  K_EUSPCL_SIZE_CHANGE = defkeyword (ctx, (char *)"SIZE-CHANGE");
   K_EUSPCL_POS = defkeyword (ctx, (char *)"POS");
   K_EUSPCL_ROT = defkeyword (ctx, (char *)"ROT");
 

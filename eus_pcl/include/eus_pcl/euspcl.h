@@ -71,15 +71,18 @@ namespace pcl {
 }
 
 extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
-extern pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT;
+extern pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT, K_EUSPCL_SIZE_CHANGE;
 extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
 extern pointer EUSPCL_CLS_PTS;
 
 extern pointer eval_c_string (register context *ctx, const char *strings);
 extern pointer make_eus_pointcloud (register context *ctx, pointer pos, pointer col,
-                                    pointer nom, pointer cuv);
+                                    pointer nom, pointer cuv,
+                                    int width = 0, int height = 0);
 extern pointer make_eus_pointcloud (register context *ctx, pointer pcloud,
-                                    pointer pos, pointer col, pointer nom, pointer cuv);
+                                    pointer pos, pointer col, pointer nom, pointer cuv,
+                                    int width = 0, int height = 0);
+
 extern pointer make_eus_coordinates (register context *ctx, pointer pos, pointer rot);
 
 extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, pointer pcloud = NULL);
@@ -251,6 +254,22 @@ inline pointer set_to_pointcloud(register context *ctx,
   local[2] = obj;
   ctx->vsp = local + 3;
   w = (pointer)SEND(ctx, 3, local);
+  ctx->vsp = local;
+
+  return w;
+}
+
+inline pointer set_to_pointcloud(register context *ctx,
+                                 pointer pointcloud,
+                                 pointer key, pointer obj0, pointer obj1) {
+  register pointer *local = ctx->vsp, w;
+
+  local[0] = pointcloud;
+  local[1] = key;
+  local[2] = obj0;
+  local[3] = obj1;
+  ctx->vsp = local + 4;
+  w = (pointer)SEND(ctx, 4, local);
   ctx->vsp = local;
 
   return w;
