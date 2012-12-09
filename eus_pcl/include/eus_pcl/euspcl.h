@@ -25,6 +25,7 @@
 #include <pcl/pcl_base.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/point_representation.h>
 #include <boost/make_shared.hpp>
 
 // euspcl_io.h
@@ -308,4 +309,7 @@ inline Eigen::Matrix4f convert_coordinates_to_eigenmatrix (register context *ctx
 
   return tma;
 }
+
+#include "euspcl_pcl_utils.h"
+
 #endif
