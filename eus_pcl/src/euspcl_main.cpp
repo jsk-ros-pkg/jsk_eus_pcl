@@ -463,12 +463,12 @@ pointer process (register context *ctx, int n, pointer *argv) {
   }
   eus_in_cloud = argv[0];
 
-  int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
-  int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
-  pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
-  pointer colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
-  pointer normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
-  pointer curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
+  int width = intval (get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_WIDTH));
+  int height = intval (get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_HEIGHT));
+  pointer points = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_POINTS);
+  pointer colors = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_COLORS);
+  pointer normals = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_NORMALS);
+  pointer curvatures = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_CURVATURES);
 
   // parse
   if (points != NIL && colors != NIL && normals != NIL) {
