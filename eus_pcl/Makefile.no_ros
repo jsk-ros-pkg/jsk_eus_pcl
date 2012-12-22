@@ -1,9 +1,9 @@
 # -*- mode: Makefile; -*-
 all: lib/eus_pcl.so
 
-PCL_VERSION=1.5 ## ROS fuerte
-# PCL_VERSION=1.6 ## official release
-#PCL_VERSION=1.7 ## trunk
+#PCL_VERSION=1.5 ## ROS fuerte
+#PCL_VERSION=1.6 ## official release
+PCL_VERSION=1.7 ## trunk
 
 CFLAGS  = $(shell pkg-config --cflags pcl_search-$(PCL_VERSION))
 CFLAGS += $(shell pkg-config --cflags pcl_segmentation-$(PCL_VERSION))
@@ -40,7 +40,7 @@ LDFLAGS += $(shell pkg-config --libs pcl_registration-$(PCL_VERSION))
 LDFLAGS += $(shell pkg-config --libs pcl_visualization-$(PCL_VERSION))
 LDFLAGS += $(shell pkg-config --libs pcl_tracking-$(PCL_VERSION))
 
-EUSPCL_OBJS = src/euspcl_main.o src/euspcl_common.o src/euspcl_features.o src/euspcl_filters.o src/euspcl_io.o src/euspcl_octree.o src/euspcl_range_image.o src/euspcl_registration.o src/euspcl_sample_consensus.o src/euspcl_segmentation.o src/euspcl_surface.o src/euspcl_tracking.o
+EUSPCL_OBJS = src/euspcl_main.o src/euspcl_common.o src/euspcl_features.o src/euspcl_filters.o src/euspcl_io.o src/euspcl_octree.o src/euspcl_range_image.o src/euspcl_registration.o src/euspcl_sample_consensus.o src/euspcl_segmentation.o src/euspcl_surface.o src/euspcl_tracking.o src/euspcl_recognition.o
 
 lib/eus_pcl.so: $(EUSPCL_OBJS)
 	if [ ! -e lib ]; then mkdir -p lib; fi
