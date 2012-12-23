@@ -1,5 +1,18 @@
 # -*- mode: Makefile; -*-
-all: lib/eus_pcl.so
+
+OS_NAME = $(shell uname -s)
+ARCH_NAME = $(shell uname -m)
+
+SLSFX=.so
+ifeq ($(OS_NAME), Darwin)
+SLSFX=.dylib
+endif
+
+MK_SL_FLAG = -shared
+ifeq ($(OS_NAME), Darwin)
+MK_SL_FLAG = -dynamiclib -flat_namespace -undefined suppress
+endif
+
 
 #PCL_VERSION=1.5 ## ROS fuerte
 #PCL_VERSION=1.6 ## official release
@@ -42,9 +55,11 @@ LDFLAGS += $(shell pkg-config --libs pcl_tracking-$(PCL_VERSION))
 
 EUSPCL_OBJS = src/euspcl_main.o src/euspcl_common.o src/euspcl_features.o src/euspcl_filters.o src/euspcl_io.o src/euspcl_octree.o src/euspcl_range_image.o src/euspcl_registration.o src/euspcl_sample_consensus.o src/euspcl_segmentation.o src/euspcl_surface.o src/euspcl_tracking.o src/euspcl_recognition.o
 
-lib/eus_pcl.so: $(EUSPCL_OBJS)
+all: lib/eus_pcl$(SLSFX)
+
+lib/eus_pcl$(SLSFX): $(EUSPCL_OBJS)
 	if [ ! -e lib ]; then mkdir -p lib; fi
-	g++ -O2 -shared -fPIC  -o $@ $^ ${LDFLAGS}
+	g++ -O2 $(MK_SL_FLAG) -fPIC  -o $@ $^ ${LDFLAGS}
 
 .cpp.o:
 	g++ -O2 -fPIC -c $< -o $@ ${CFLAGS} -DLinux -D_REENTRANT -Dx86_64 -I${EUSDIR}/include -I${EUSDIR}/../irteus
