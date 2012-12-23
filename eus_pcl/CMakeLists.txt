@@ -28,3 +28,26 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+find_package(Eigen REQUIRED)
+include_directories(${Eigen_INCLUDE_DIRS})
+
+rosbuild_find_ros_package(euslisp)
+include_directories(/usr/include /usr/X11R6/include ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
+
+rosbuild_add_library(eus_pcl src/euspcl_main.cpp src/euspcl_common.cpp src/euspcl_features.cpp src/euspcl_filters.cpp src/euspcl_io.cpp src/euspcl_octree.cpp src/euspcl_range_image.cpp src/euspcl_registration.cpp src/euspcl_sample_consensus.cpp src/euspcl_segmentation.cpp src/euspcl_surface.cpp src/euspcl_tracking.cpp src/euspcl_recognition.cpp)
+
+# compile flags
+set(COMPILE_FLAGS "-fPIC -O2 -Wno-write-strings -Wno-comment")
+add_definitions(-DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
+add_definitions(-DSVNVERSION='\"r${SVNVERSION}\"')
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
+   ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
+ add_definitions(-Dx86_64)
+else()
+ add_definitions(-Di486)
+endif()
+
+rosbuild_add_compile_flags(eus_pcl ${COMPILE_FLAGS})
+
+set_target_properties(eus_pcl PROPERTIES PREFIX "" SUFFIX ".so")
+
