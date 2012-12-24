@@ -11,6 +11,7 @@
 #include "eus_pcl/euspcl_segmentation.h"
 #include "eus_pcl/euspcl_surface.h"
 #include "eus_pcl/euspcl_tracking.h"
+#include "eus_pcl/euspcl_recognition.h"
 
 extern "C" {
   pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env);
@@ -527,6 +528,10 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_surface.cpp
   defun (ctx, (char *)"CONVEX-HULL", argv[0], (pointer (*)())PCL_CONVEX_HULL);
   defun (ctx, (char *)"CONVEX-HULL-PLANE", argv[0], (pointer (*)())PCL_CONVEX_HULL_PLANE);
+
+  // euspcl_recoginition.cpp
+  defun (ctx, (char *)"ISM-TRAINING", argv[0], (pointer (*)())PCL_ISM_TRAINING);
+  defun (ctx, (char *)"ISM-DETECTION", argv[0], (pointer (*)())PCL_ISM_DETECTION);
 
 #ifdef USE_PACKAGE
   // reset package
