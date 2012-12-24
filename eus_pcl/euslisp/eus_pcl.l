@@ -54,17 +54,18 @@
 
 
 #|
+;; pcd files were downloaded from pointclouds.org
 (setq tpt (pcl::read-pcd "ism_test_cat.pcd"))
 (setq pt0 (pcl::read-pcd "ism_train_cat.pcd"))
 (setq pt1 (pcl::read-pcd "ism_train_horse.pcd"))
 (setq pt2 (pcl::read-pcd "ism_train_lioness.pcd"))
 (setq pt3 (pcl::read-pcd "ism_train_michael.pcd"))
 (setq pt4 (pcl::read-pcd "ism_train_wolf.pcd"))
-
 (pcl::ism-training pt0 pt1 pt2 pt3 pt4 tpt)
 
-trained_ism_model.txt
+;;trained_ism_model.txt
 |#
+
 ;; Obsolated. all codes below should be rewritten ugin euspcl.
 #|
 (let* ((lib (load-foreign (format nil "~A/euslib/demo/youhei/libs/pcl_test/libPCLeus.so"

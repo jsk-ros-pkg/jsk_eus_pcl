@@ -82,41 +82,43 @@ pointer PCL_ISM_TRAINING (register context *ctx, int n, pointer *argv) {
     normal_estimator.compute (*testing_normals);
     std::cerr << ";; read points and add normal testing" << std::endl;
   }
+
   model->loadModelFromfile (file);
-  int testing_class = 0;
 
-  std::cerr << ";; start find objects" << std::endl;
-  boost::shared_ptr< pcl::features::ISMVoteList< Point > > vote_list =
-    ism.findObjects (model, testing_points, testing_normals, testing_class);
-  std::cerr << ";; done find objects" << std::endl;
+  for (int testing_class = 0;
+       testing_class < n - 1;
+       testing_class++) {
+    std::cerr << ";; start find objects " << testing_class << std::endl;
+    boost::shared_ptr< pcl::features::ISMVoteList< Point > > vote_list =
+      ism.findObjects (model, testing_points, testing_normals, testing_class);
+    std::cerr << ";; done find objects" << std::endl;
 
-  double radius = model->sigmas_[testing_class] * 10.0;
-  double sigma = model->sigmas_[testing_class];
+    double radius = model->sigmas_[testing_class] * 10.0;
+    double sigma = model->sigmas_[testing_class];
 
-  std::cerr << "moge" << std::endl;
-
-  std::vector< pcl::ISMPeak, Eigen::aligned_allocator<pcl::ISMPeak> > strongest_peaks;
-  std::cerr << "fuga" << std::endl;
-  vote_list->findStrongestPeaks (strongest_peaks, testing_class, radius, sigma);
-  std::cerr << "higa" << std::endl;
-
-  std::cerr << "num = " << vote_list->getNumberOfVotes() << std::endl;
-  std::cerr << "error size = " << strongest_peaks.size() << std::endl;
-  for (size_t i_vote = 0;
-       i_vote < strongest_peaks.size ();
-       i_vote++)
-    {
-      std::cerr << "density = " << strongest_peaks[i_vote].density << " / class = ";
-      std::cerr << strongest_peaks[i_vote].class_id << std::endl;
-      std::cerr << strongest_peaks[i_vote].x << " ";
-      std::cerr << strongest_peaks[i_vote].y << " ";
-      std::cerr << strongest_peaks[i_vote].z << std::endl;
-    }
+    std::vector< pcl::ISMPeak, Eigen::aligned_allocator<pcl::ISMPeak> > strongest_peaks;
+    vote_list->findStrongestPeaks (strongest_peaks, testing_class, radius, sigma);
+    std::cerr << "sigma = " << sigma << " / radius = " << radius << std::endl;
+    std::cerr << "num = " << vote_list->getNumberOfVotes() << std::endl;
+    std::cerr << "error size = " << strongest_peaks.size() << std::endl;
+    for (size_t i_vote = 0;
+         i_vote < strongest_peaks.size ();
+         i_vote++)
+      {
+        std::cerr << "density = " << strongest_peaks[i_vote].density << " / class = ";
+        std::cerr << strongest_peaks[i_vote].class_id << std::endl;
+        std::cerr << strongest_peaks[i_vote].x << " ";
+        std::cerr << strongest_peaks[i_vote].y << " ";
+        std::cerr << strongest_peaks[i_vote].z << std::endl;
+      }
+    std::cerr << std::endl;
+  }
 #endif
   return NIL;
 }
 
 pointer PCL_ISM_DETECTION (register context *ctx, int n, pointer *argv) {
+  // not working well yet
   pointer eus_in_cloud;
   pointer ret = NIL;
   int pc = 0;
@@ -136,9 +138,7 @@ pointer PCL_ISM_DETECTION (register context *ctx, int n, pointer *argv) {
   int width = intval (get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_WIDTH));
   int height = intval (get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_HEIGHT));
   pointer points = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_POINTS);
-  //pointer colors = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_COLORS);
-  //pointer normals = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_NORMALS);
-  //pointer curvatures = get_from_pointcloud (ctx, eus_in_cloud, K_EUSPCL_CURVATURES);
+
   Points::Ptr testing_points =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
