@@ -1,11 +1,13 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_filters.h"
 
-#define DOWNSAMPLE_(PTYPE) \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+using namespace pcl;
+
+#define DOWNSAMPLE_(PTYPE)                                              \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
-  pcl::VoxelGrid< PTYPE > vg;                                           \
+  PointCloud< PTYPE > pcl_cloud_filtered;                               \
+  VoxelGrid< PTYPE > vg;                                                \
   vg.setInputCloud (pcl_cloud);                                         \
   vg.setLeafSize (leaf_x, leaf_y, leaf_z);                              \
   vg.filter (pcl_cloud_filtered);                                       \
@@ -65,11 +67,11 @@ pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv) {
   return ret;
 }
 
-#define EXTRACT_INDICES_(PTYPE) \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+#define EXTRACT_INDICES_(PTYPE)                                         \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PointCloud< PTYPE > pcl_cloud_filtered;                          \
-  pcl::ExtractIndices< PTYPE > ext_ind;                                 \
+  PointCloud< PTYPE > pcl_cloud_filtered;                               \
+  ExtractIndices< PTYPE > ext_ind;                                      \
   ext_ind.setInputCloud (pcl_cloud);                                    \
   ext_ind.setIndices (pcl_indices);                                     \
   ext_ind.setNegative (pcl_negative);                                   \
@@ -112,7 +114,7 @@ pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
     }
   }
 
-  pcl::IndicesPtr pcl_indices (new pcl::Indices());
+  IndicesPtr pcl_indices (new Indices());
   if (isintvector(eus_indices)) {
     // intvec
     size_t vsize = vecsize(eus_indices);

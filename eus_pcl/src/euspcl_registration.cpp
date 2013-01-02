@@ -1,6 +1,8 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_registration.h"
 
+using namespace pcl;
+
 pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   /* ( source_pointcloud target_pointcloud &optional (icp_type) (guess_coords)) */
   pointer A_cloud, B_cloud;
@@ -42,20 +44,20 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   Points::Ptr b_ptr =
     make_pcl_pointcloud< Point > (ctx, b_points, NULL, NULL, NULL, b_width, b_height);
 
-  pcl::Registration< Point, Point, float >::Ptr icp;
+  Registration< Point, Point, float >::Ptr icp;
 
   switch (icp_type) {
   case REGIST_SVD:
-    icp.reset (new pcl::IterativeClosestPoint< Point, Point > ());
+    icp.reset (new IterativeClosestPoint< Point, Point > ());
     break;
   case REGIST_NL:
-    icp.reset (new pcl::IterativeClosestPointNonLinear< Point, Point >());
+    icp.reset (new IterativeClosestPointNonLinear< Point, Point >());
     break;
   case REGIST_GICP:
-    icp.reset (new pcl::GeneralizedIterativeClosestPoint< Point, Point >());
+    icp.reset (new GeneralizedIterativeClosestPoint< Point, Point >());
     break;
   case REGIST_NDT:
-    icp.reset (new pcl::NormalDistributionsTransform< Point, Point >());
+    icp.reset (new NormalDistributionsTransform< Point, Point >());
     break;
   default:
     // warning

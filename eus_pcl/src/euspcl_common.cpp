@@ -1,6 +1,8 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_common.h"
 
+using namespace pcl;
+
 pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
   pointer in_cloud;
   ckarg(1);
@@ -14,11 +16,11 @@ pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
   pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
   int pc = 0;
 
-  pcl::PointCloud< Point >::Ptr ptr =
+  PointCloud< Point >::Ptr ptr =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
   // process
-  pcl::PCA< Point > pca;
+  PCA< Point > pca;
   pca.setInputCloud (ptr);
 
   //pca.getCoefficients();

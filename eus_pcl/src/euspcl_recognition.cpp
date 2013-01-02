@@ -4,13 +4,15 @@
 #include <pcl/features/impl/fpfh.hpp>
 #include <pcl/recognition/impl/implicit_shape_model.hpp>
 
+using namespace pcl;
+
 // applications
 pointer PCL_ISM_TRAINING (register context *ctx, int n, pointer *argv) {
   //
   unsigned int number_of_training_clouds = 1;
   eusfloat_t estimate_normal_radius = 25.0;
 
-  pcl::NormalEstimation< Point, PNormal > normal_estimator;
+  NormalEstimation< Point, PNormal > normal_estimator;
   normal_estimator.setRadiusSearch (estimate_normal_radius);
 
   std::vector< Points::Ptr >  training_clouds;
@@ -40,20 +42,20 @@ pointer PCL_ISM_TRAINING (register context *ctx, int n, pointer *argv) {
     training_classes.push_back (i);
   }
 
-  pcl::FPFHEstimation< Point, PNormal, pcl::Histogram<153> >::Ptr fpfh
-    (new pcl::FPFHEstimation < Point, PNormal, pcl::Histogram<153> >);
+  FPFHEstimation< Point, PNormal, Histogram<153> >::Ptr fpfh
+    (new FPFHEstimation < Point, PNormal, Histogram<153> >);
   fpfh->setRadiusSearch (30.0);
-  pcl::Feature< Point, pcl::Histogram<153> >::Ptr feature_estimator (fpfh);
+  Feature< Point, Histogram<153> >::Ptr feature_estimator (fpfh);
 
-  pcl::ism::ImplicitShapeModelEstimation<153, Point, PNormal> ism;
+  ism::ImplicitShapeModelEstimation<153, Point, PNormal> ism;
   ism.setFeatureEstimator (feature_estimator);
   ism.setTrainingClouds  (training_clouds);
   ism.setTrainingNormals (training_normals);
   ism.setTrainingClasses (training_classes);
   ism.setSamplingSize (2.0f);
 
-  pcl::ism::ImplicitShapeModelEstimation<153, Point, PNormal>::ISMModelPtr model
-    = boost::shared_ptr<pcl::features::ISMModel> (new pcl::features::ISMModel);
+  ism::ImplicitShapeModelEstimation<153, Point, PNormal>::ISMModelPtr model
+    = boost::shared_ptr<features::ISMModel> (new features::ISMModel);
 
   std::cerr << ";; start training" << std::endl;
   ism.trainISM (model);
@@ -89,14 +91,14 @@ pointer PCL_ISM_TRAINING (register context *ctx, int n, pointer *argv) {
        testing_class < n - 1;
        testing_class++) {
     std::cerr << ";; start find objects " << testing_class << std::endl;
-    boost::shared_ptr< pcl::features::ISMVoteList< Point > > vote_list =
+    boost::shared_ptr< features::ISMVoteList< Point > > vote_list =
       ism.findObjects (model, testing_points, testing_normals, testing_class);
     std::cerr << ";; done find objects" << std::endl;
 
     double radius = model->sigmas_[testing_class] * 10.0;
     double sigma = model->sigmas_[testing_class];
 
-    std::vector< pcl::ISMPeak, Eigen::aligned_allocator<pcl::ISMPeak> > strongest_peaks;
+    std::vector< ISMPeak, Eigen::aligned_allocator<ISMPeak> > strongest_peaks;
     vote_list->findStrongestPeaks (strongest_peaks, testing_class, radius, sigma);
     std::cerr << "sigma = " << sigma << " / radius = " << radius << std::endl;
     std::cerr << "num = " << vote_list->getNumberOfVotes() << std::endl;
@@ -142,7 +144,7 @@ pointer PCL_ISM_DETECTION (register context *ctx, int n, pointer *argv) {
   Points::Ptr testing_points =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
-  pcl::NormalEstimation< Point, PNormal > normal_estimator;
+  NormalEstimation< Point, PNormal > normal_estimator;
   normal_estimator.setRadiusSearch (estimate_normal_radius);
 
   Normals::Ptr testing_normals
@@ -150,19 +152,19 @@ pointer PCL_ISM_DETECTION (register context *ctx, int n, pointer *argv) {
   normal_estimator.setInputCloud (testing_points);
   normal_estimator.compute (*testing_normals);
 
-  pcl::ism::ImplicitShapeModelEstimation<153, Point, PNormal>::ISMModelPtr model
-    = boost::shared_ptr<pcl::features::ISMModel> (new pcl::features::ISMModel);
+  ism::ImplicitShapeModelEstimation<153, Point, PNormal>::ISMModelPtr model
+    = boost::shared_ptr<features::ISMModel> (new features::ISMModel);
 
   model->loadModelFromfile (fname);
 
-  pcl::ism::ImplicitShapeModelEstimation<153, Point, PNormal> ism;
-  boost::shared_ptr< pcl::features::ISMVoteList< Point > > vote_list =
+  ism::ImplicitShapeModelEstimation<153, Point, PNormal> ism;
+  boost::shared_ptr< features::ISMVoteList< Point > > vote_list =
     ism.findObjects (model, testing_points, testing_normals, testing_class);
 
   double radius = model->sigmas_[testing_class] * 10.0;
   double sigma = model->sigmas_[testing_class];
 
-  std::vector< pcl::ISMPeak, Eigen::aligned_allocator<pcl::ISMPeak> > strongest_peaks;
+  std::vector< ISMPeak, Eigen::aligned_allocator<ISMPeak> > strongest_peaks;
   vote_list->findStrongestPeaks (strongest_peaks, testing_class, radius, sigma);
 
   std::cerr << "num = " << vote_list->getNumberOfVotes() << std::endl;
@@ -182,7 +184,7 @@ pointer PCL_ISM_DETECTION (register context *ctx, int n, pointer *argv) {
   colored_cloud->height = 0;
   colored_cloud->width = 1;
 
-  pcl::PointXYZRGB point;
+  PointXYZRGB point;
   point.r = 255;
   point.g = 255;
   point.b = 255;

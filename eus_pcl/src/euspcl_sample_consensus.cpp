@@ -1,14 +1,16 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_sample_consensus.h"
 
-#define SAC_SEGMENTATION_(PTYPE) \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+using namespace pcl;
+
+#define SAC_SEGMENTATION_(PTYPE)                                        \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PointCloud< PTYPE > ret_pcl_cloud;                               \
-  pcl::SACSegmentation< PTYPE > seg;                                    \
-  //pcl::SACSegmentationFromNormals< PTYPE, PTYPE > seg;                \
-  pcl::ModelCoefficients::Ptr out_coefficients (new pcl::ModelCoefficients); \
-  pcl::PointIndices::Ptr out_inliers (new pcl::PointIndices);           \
+  PointCloud< PTYPE > ret_pcl_cloud;                                    \
+  SACSegmentation< PTYPE > seg;                                         \
+  //SACSegmentationFromNormals< PTYPE, PTYPE > seg;                     \
+  ModelCoefficients::Ptr out_coefficients (new ModelCoefficients);      \
+  PointIndices::Ptr out_inliers (new PointIndices);                     \
   seg.setOptimizeCoefficients (optimize_coeff);                         \
   seg.setModelType (sac_model_type);                                    \
   seg.setMethodType (sac_method_type);                                  \
@@ -26,7 +28,7 @@
   //seg.setDistanceFromOrigin (const double d);                         \
   seg.segment (*out_inliers, *out_coefficients);                        \
   //std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
-  pcl::ExtractIndices< PTYPE > extract;                                 \
+  ExtractIndices< PTYPE > extract;                                      \
   extract.setInputCloud (pcl_cloud);                                    \
   extract.setIndices (out_inliers);                                     \
   extract.setNegative (extract_negative);                               \
@@ -62,8 +64,8 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   pointer ret = NIL;
   numunion nu;
   int pc = 0;
-  pcl::SacModel sac_model_type = pcl::SACMODEL_PLANE;
-  int sac_method_type = pcl::SAC_RANSAC;
+  SacModel sac_model_type = SACMODEL_PLANE;
+  int sac_method_type = SAC_RANSAC;
   eusinteger_t sac_max_iter = 10000;
   eusfloat_t sac_radius_min = 0.0;
   eusfloat_t sac_radius_max = 0.1;
@@ -83,7 +85,7 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   in_cloud = argv[0];
 
   if (n > 1) {
-    sac_model_type = pcl::SacModel(intval(argv[1]));
+    sac_model_type = SacModel(intval(argv[1]));
   }
   if (n > 2) {
     sac_method_type = intval(argv[2]);

@@ -441,9 +441,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
 
 #if 0
 #define MACRO_TEMPLATE_(PTYPE)                                          \
-  pcl::PointCloud< PTYPE >::Ptr ptr =                                   \
+  PointCloud< PTYPE >::Ptr ptr =                                   \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PointCloud< PTYPE > ret_cloud;                                   \
+  PointCloud< PTYPE > ret_cloud;                                   \
   // process                                                            \
   if (create) {                                                         \
     ret = make_pointcloud_from_pcl (ctx, ret_cloud);                    \

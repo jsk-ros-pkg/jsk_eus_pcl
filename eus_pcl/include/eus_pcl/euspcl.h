@@ -21,6 +21,8 @@
 #include <sstream>
 #include <cstdio>
 
+#define __PCL_NS pcl
+
 // For PCL
 #include <pcl/pcl_base.h>
 #include <pcl/point_cloud.h>
@@ -54,17 +56,17 @@
 #undef iostream
 #undef complex
 
-typedef pcl::PointXYZ    Point;
-typedef pcl::Normal      PNormal;
-typedef pcl::PointXYZRGB PointC;
-typedef pcl::PointNormal PointN;
-typedef pcl::PointXYZRGBNormal PointCN;
+typedef __PCL_NS::PointXYZ    Point;
+typedef __PCL_NS::Normal      PNormal;
+typedef __PCL_NS::PointXYZRGB PointC;
+typedef __PCL_NS::PointNormal PointN;
+typedef __PCL_NS::PointXYZRGBNormal PointCN;
 
-typedef pcl::PointCloud< Point >   Points;
-typedef pcl::PointCloud< PNormal > Normals;
-typedef pcl::PointCloud< PointN >  PointsN;
-typedef pcl::PointCloud< PointC >  PointsC;
-typedef pcl::PointCloud< PointCN > PointsCN;
+typedef __PCL_NS::PointCloud< Point >   Points;
+typedef __PCL_NS::PointCloud< PNormal > Normals;
+typedef __PCL_NS::PointCloud< PointN >  PointsN;
+typedef __PCL_NS::PointCloud< PointC >  PointsC;
+typedef __PCL_NS::PointCloud< PointCN > PointsCN;
 
 namespace pcl {
   typedef std::vector< int > Indices;
@@ -210,12 +212,12 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
 }
 
 template < typename PTS >
-inline typename pcl::PointCloud<PTS>::Ptr
+inline typename __PCL_NS::PointCloud<PTS>::Ptr
 make_pcl_pointcloud (register context *ctx,
                      pointer points, pointer colors, pointer normals,
                      pointer curvatures, int width, int height) {
 
-  typename pcl::PointCloud< PTS >::Ptr pcl_cloud ( new  pcl::PointCloud< PTS > );
+  typename __PCL_NS::PointCloud< PTS >::Ptr pcl_cloud ( new  __PCL_NS::PointCloud< PTS > );
 
   fvector2pcl_pointcloud(points == NULL ? NULL :
                          (points == NIL ? NULL : points->c.ary.entity->c.fvec.fv),

@@ -1,16 +1,18 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_surface.h"
 
+using namespace pcl;
+
 #if 0
 int concave_plane(eusfloat_t *src, int ssize,
                   eusfloat_t *coeff, eusfloat_t alpha, eusfloat_t *ret) {
 
-  typedef pcl::PointXYZ Point;
-  pcl::PointCloud<Point>::Ptr cloud_projected (new pcl::PointCloud<Point>);
-  pcl::PointCloud<Point>::Ptr cloud_filtered (new pcl::PointCloud<Point>);
+  typedef PointXYZ Point;
+  PointCloud<Point>::Ptr cloud_projected (new PointCloud<Point>);
+  PointCloud<Point>::Ptr cloud_filtered (new PointCloud<Point>);
   floatvector2pointcloud(src, ssize, 1, *cloud_filtered);
 
-  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  ModelCoefficients::Ptr coefficients (new ModelCoefficients);
   coefficients->values.resize(4);
   coefficients->values[0] = coeff[0];
   coefficients->values[1] = coeff[1];
@@ -18,15 +20,15 @@ int concave_plane(eusfloat_t *src, int ssize,
   coefficients->values[3] = coeff[3]/1000.0;
 
   // Project the model inliers
-  pcl::ProjectInliers<Point> proj;
-  proj.setModelType (pcl::SACMODEL_PLANE);
+  ProjectInliers<Point> proj;
+  proj.setModelType (SACMODEL_PLANE);
   proj.setInputCloud (cloud_filtered);
   proj.setModelCoefficients (coefficients);
   proj.filter (*cloud_projected);
 
   // Create a Concave Hull representation of the projected inliers
-  pcl::PointCloud<Point>::Ptr cloud_hull (new pcl::PointCloud<Point>);
-  pcl::ConcaveHull<Point> chull;
+  PointCloud<Point>::Ptr cloud_hull (new PointCloud<Point>);
+  ConcaveHull<Point> chull;
 
   chull.setInputCloud (cloud_projected);
   chull.setAlpha (alpha);
@@ -44,12 +46,12 @@ int concave_plane(eusfloat_t *src, int ssize,
 int convex_plane(eusfloat_t *src, int ssize,
                  eusfloat_t *coeff, eusfloat_t *ret) {
 
-  typedef pcl::PointXYZ Point;
-  pcl::PointCloud<Point>::Ptr cloud_projected (new pcl::PointCloud<Point>);
-  pcl::PointCloud<Point>::Ptr cloud_filtered (new pcl::PointCloud<Point>);
+  typedef PointXYZ Point;
+  PointCloud<Point>::Ptr cloud_projected (new PointCloud<Point>);
+  PointCloud<Point>::Ptr cloud_filtered (new PointCloud<Point>);
   floatvector2pointcloud(src, ssize, 1, *cloud_filtered);
 
-  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  ModelCoefficients::Ptr coefficients (new ModelCoefficients);
   coefficients->values.resize(4);
   coefficients->values[0] = coeff[0];
   coefficients->values[1] = coeff[1];
@@ -57,15 +59,15 @@ int convex_plane(eusfloat_t *src, int ssize,
   coefficients->values[3] = coeff[3] / 1000.0;
 
   // Project the model inliers
-  pcl::ProjectInliers<Point> proj;
-  proj.setModelType (pcl::SACMODEL_PLANE);
+  ProjectInliers<Point> proj;
+  proj.setModelType (SACMODEL_PLANE);
   proj.setInputCloud (cloud_filtered);
   proj.setModelCoefficients (coefficients);
   proj.filter (*cloud_projected);
 
   // Create a Concave Hull representation of the projected inliers
-  pcl::PointCloud<Point>::Ptr cloud_hull (new pcl::PointCloud<Point>);
-  pcl::ConvexHull<Point> chull;
+  PointCloud<Point>::Ptr cloud_hull (new PointCloud<Point>);
+  ConvexHull<Point> chull;
 
   chull.setInputCloud (cloud_projected);
   //chull.setAlpha (alpha);
@@ -88,11 +90,11 @@ pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
   int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
   pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
 
-  pcl::PointCloud< Point >::Ptr ptr =
+  PointCloud< Point >::Ptr ptr =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
-  pcl::PointCloud< Point >::Ptr cloud_hull (new pcl::PointCloud<Point>);
-  pcl::ConvexHull< Point > chull;
+  PointCloud< Point >::Ptr cloud_hull (new PointCloud<Point>);
+  ConvexHull< Point > chull;
 
   chull.setInputCloud (ptr);
   chull.reconstruct (*cloud_hull);

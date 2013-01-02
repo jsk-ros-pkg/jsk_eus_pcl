@@ -2,6 +2,8 @@
 #include "eus_pcl/euspcl_segmentation.h"
 #include <iostream>
 
+using namespace pcl;
+
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -46,13 +48,13 @@ pointer PCL_EXTRACT_EUCLIDEAN_CLUSTERS (register context *ctx, int n, pointer *a
   int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
 
-  pcl::PointCloud< Point >::Ptr pcl_cloud =
+  PointCloud< Point >::Ptr pcl_cloud =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
-  pcl::search::KdTree< Point >::Ptr tree (new pcl::search::KdTree< Point > ());
+  search::KdTree< Point >::Ptr tree (new search::KdTree< Point > ());
   tree->setInputCloud (pcl_cloud); //??
-  std::vector< pcl::PointIndices > cluster_indices;
-  pcl::EuclideanClusterExtraction< Point > euc_ext;
+  std::vector< PointIndices > cluster_indices;
+  EuclideanClusterExtraction< Point > euc_ext;
   euc_ext.setInputCloud (pcl_cloud);
   euc_ext.setClusterTolerance (tolerance);
   euc_ext.setMinClusterSize (minsize);
@@ -140,16 +142,16 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
   Points::Ptr pcl_cloud_ptr =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
-  pcl::SACSegmentation< Point > plane_seg;
+  SACSegmentation< Point > plane_seg;
 
   plane_seg.setOptimizeCoefficients (true);
-  plane_seg.setModelType (pcl::SACMODEL_PLANE);
-  plane_seg.setMethodType (pcl::SAC_RANSAC);
+  plane_seg.setModelType (SACMODEL_PLANE);
+  plane_seg.setMethodType (SAC_RANSAC);
   plane_seg.setDistanceThreshold (distance_threshold);
   plane_seg.setMaxIterations (max_iterations);
   //plane_seg.setProbability (_probability);
 
-  pcl::ExtractIndices< Point > extractor;
+  ExtractIndices< Point > extractor;
 
   size_t point_size = pcl_cloud_ptr->points.size();
   int plane_num = 0;
@@ -162,12 +164,12 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
 #if DEBUG
     tm.restart();
 #endif
-    pcl::PointIndicesPtr pti (new pcl::PointIndices());
+    PointIndicesPtr pti (new PointIndices());
     {
 #if DEBUG
       std::cerr << ";; point_size: " << point_size << std::endl;
 #endif
-      pcl::DefaultPointRepresentation<Point> pr;
+      DefaultPointRepresentation<Point> pr;
       size_t cntr=0;
       for (Points::const_iterator it = pcl_cloud_ptr->begin();
            it != pcl_cloud_ptr->end(); it++) {
@@ -185,8 +187,8 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
     plane_seg.setInputCloud (pcl_cloud_ptr);
     plane_seg.setIndices (pti);
 
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+    ModelCoefficients::Ptr coefficients (new ModelCoefficients);
+    PointIndices::Ptr inliers (new PointIndices);
 
     plane_seg.segment (*inliers, *coefficients);
 
@@ -219,11 +221,11 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
       extractor.filter (*tmpp);
 
       // Creating the KdTree object for the search method of the extraction
-      pcl::search::KdTree<Point>::Ptr tree (new pcl::search::KdTree<Point>);
+      search::KdTree<Point>::Ptr tree (new search::KdTree<Point>);
       tree->setInputCloud (tmpp);
 
-      std::vector< pcl::PointIndices > cluster_indices;
-      pcl::EuclideanClusterExtraction< Point > ec_ext;
+      std::vector< PointIndices > cluster_indices;
+      EuclideanClusterExtraction< Point > ec_ext;
       ec_ext.setClusterTolerance (tolerance); // 2cm
       ec_ext.setMinClusterSize (min_plane_points);
       // ec_ext.setMaxClusterSize (25000); // no max limitation
@@ -232,7 +234,7 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
       ec_ext.extract (cluster_indices);
 
       if (cluster_indices.size()  > 0) {
-        pcl::PointIndicesPtr tinlier (new pcl::PointIndices);
+        PointIndicesPtr tinlier (new PointIndices);
         for (std::vector<int>::iterator it = cluster_indices[0].indices.begin();
              it != cluster_indices[0].indices.end(); it++) {
           tinlier->indices.push_back (inliers->indices[*it]);

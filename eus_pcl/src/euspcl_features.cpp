@@ -1,13 +1,15 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_features.h"
 
+using namespace pcl;
+
 #define ADD_NORMAL_(PTYPE, radius)                                      \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, NULL, NULL, width, height); \
-  pcl::NormalEstimation< PTYPE, PNormal > no_est;                       \
+  NormalEstimation< PTYPE, PNormal > no_est;                            \
   no_est.setInputCloud (pcl_cloud);                                     \
   //                                                                    \
-  pcl::search::KdTree<PTYPE>::Ptr tree (new pcl::search::KdTree<PTYPE> ()); \
+  search::KdTree<PTYPE>::Ptr tree (new search::KdTree<PTYPE> ());       \
   no_est.setSearchMethod (tree);                                        \
   if (radius > 1000.0) {                                                \
     no_est.setKSearch (round(radius/1000.0));                           \

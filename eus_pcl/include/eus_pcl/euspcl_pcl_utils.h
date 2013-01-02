@@ -2,14 +2,14 @@
 #define __EUSPCL_PCL_UTIL_H__
 
 template < typename PTYPE >
-void stepPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
-                     pcl::PointCloud < PTYPE > &out_cloud,
+void stepPointCloud (__PCL_NS::PointCloud < PTYPE > &in_cloud,
+                     __PCL_NS::PointCloud < PTYPE > &out_cloud,
                      bool remove_nan, bool keep_organized,
                      int xoffset, int yoffset, int xstep, int ystep) {
 
   size_t xlength = in_cloud.width;
   size_t ylength = in_cloud.height;
-  pcl::DefaultPointRepresentation< PTYPE > pr;
+  __PCL_NS::DefaultPointRepresentation< PTYPE > pr;
 
   if (xstep >= 1 && ystep >= 1) {
     for (int ypos = yoffset; ypos < ylength; ypos += ystep) {
@@ -37,7 +37,7 @@ void stepPointCloud (pcl::PointCloud < PTYPE > &in_cloud,
       out_cloud.height = 1;
     }
   } else if (remove_nan) {
-    for ( typename pcl::PointCloud< PTYPE >::const_iterator it = in_cloud.begin();
+    for ( typename __PCL_NS::PointCloud< PTYPE >::const_iterator it = in_cloud.begin();
          it != in_cloud.end(); it++) {
       if (!pr.isValid (*it)) {
         if (keep_organized) {

@@ -1,18 +1,20 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_io.h"
 
+using namespace pcl;
+
 #define READ_PCD_(PTYPE) \
-  pcl::PointCloud < PTYPE > pt;  \
+  PointCloud < PTYPE > pt;                \
   int res = rd.read< PTYPE > (fname, pt); \
-  if ( res != 0 ) { \
-    return NIL;     \
-  }                 \
+  if ( res != 0 ) {                       \
+    return NIL;                           \
+  }                                        \
   ret = make_pointcloud_from_pcl(ctx, pt); \
   vpush(ret); pc++;
 
 pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
   /* filename */
-  pcl::PCDReader rd;
+  PCDReader rd;
   pointer ret = NIL;
   int pc = 0;
   bool have_rgb=false, have_normal=false, have_position=false;
@@ -68,9 +70,9 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
 }
 
 #define WRITE_PCD_(PTYPE, fname)                                        \
-  pcl::PointCloud< PTYPE >::Ptr pcl_cloud =                             \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PCDWriter wt;                                                    \
+  PCDWriter wt;                                                         \
   wt.write < PTYPE > (fname, *pcl_cloud, binary);
 
 pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
@@ -121,9 +123,9 @@ pointer PCL_WRITE_PCD (register context *ctx, int n, pointer *argv) {
 }
 
 #define STEP_POINTCLOUD_(PTYPE)                                         \
-  pcl::PointCloud< PTYPE >::Ptr ptr =                                   \
+  PointCloud< PTYPE >::Ptr ptr =                                        \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
-  pcl::PointCloud< PTYPE > ret_cloud;                                   \
+  PointCloud< PTYPE > ret_cloud;                                        \
   stepPointCloud< PTYPE > (*ptr, ret_cloud, remove_nan, keep_organized, \
                            x_offset, y_offset, x_step, y_step);         \
   if (create) {                                                         \
