@@ -1,10 +1,15 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_recognition.h"
 
+#if __PCL_SELECT == 0
 #include <pcl/features/impl/fpfh.hpp>
 #include <pcl/recognition/impl/implicit_shape_model.hpp>
-
 using namespace pcl;
+#elif __PCL_SELECT == 17
+#include <pcl17/features/impl/fpfh.hpp>
+#include <pcl17/recognition/impl/implicit_shape_model.hpp>
+using namespace pcl17;
+#endif
 
 // applications
 pointer PCL_ISM_TRAINING (register context *ctx, int n, pointer *argv) {

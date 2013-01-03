@@ -1,7 +1,11 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_sample_consensus.h"
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 #define SAC_SEGMENTATION_(PTYPE)                                        \
   PointCloud< PTYPE >::Ptr pcl_cloud =                                  \

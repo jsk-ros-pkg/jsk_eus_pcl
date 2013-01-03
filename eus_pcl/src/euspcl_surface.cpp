@@ -1,7 +1,11 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_surface.h"
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 #if 0
 int concave_plane(eusfloat_t *src, int ssize,

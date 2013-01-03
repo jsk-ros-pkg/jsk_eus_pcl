@@ -1,7 +1,11 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_common.h"
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 pointer PCL_PCA (register context *ctx, int n, pointer *argv) {
   pointer in_cloud;

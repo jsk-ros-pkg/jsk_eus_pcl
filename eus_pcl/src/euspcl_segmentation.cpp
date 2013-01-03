@@ -2,7 +2,11 @@
 #include "eus_pcl/euspcl_segmentation.h"
 #include <iostream>
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 #ifndef DEBUG
 #define DEBUG 0

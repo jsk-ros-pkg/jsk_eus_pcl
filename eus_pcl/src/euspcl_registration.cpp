@@ -1,7 +1,11 @@
 #include "eus_pcl/euspcl.h"
 #include "eus_pcl/euspcl_registration.h"
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   /* ( source_pointcloud target_pointcloud &optional (icp_type) (guess_coords)) */

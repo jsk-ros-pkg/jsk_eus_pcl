@@ -20,7 +20,11 @@ extern "C" {
     return add_module_initializer(modname, (pointer (*)())___eus_pcl);}
 }
 
+#if __PCL_SELECT == 0
 using namespace pcl;
+#elif __PCL_SELECT == 17
+using namespace pcl17;
+#endif
 
 pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
 pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT, K_EUSPCL_SIZE_CHANGE;

@@ -21,13 +21,25 @@
 #include <sstream>
 #include <cstdio>
 
-#define __PCL_NS pcl
+#ifndef __PCL_SELECT
+#define __PCL_SELECT 0 // 0: pcl_trunk / 17: perception_pcl_unstable
+#endif
 
 // For PCL
+#if __PCL_SELECT == 0
+#define __PCL_NS pcl
 #include <pcl/pcl_base.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/point_representation.h>
+#elif __PCL_SELECT == 17
+#define __PCL_NS pcl17
+#include <pcl17/pcl_base.h>
+#include <pcl17/point_cloud.h>
+#include <pcl17/point_types.h>
+#include <pcl17/point_representation.h>
+#endif
+
 #include <boost/make_shared.hpp>
 
 // euspcl_io.h
@@ -68,7 +80,7 @@ typedef __PCL_NS::PointCloud< PointN >  PointsN;
 typedef __PCL_NS::PointCloud< PointC >  PointsC;
 typedef __PCL_NS::PointCloud< PointCN > PointsCN;
 
-namespace pcl {
+namespace __PCL_NS {
   typedef std::vector< int > Indices;
 }
 

@@ -1,7 +1,11 @@
 #ifndef __EUSPCL_IO__
 #define __EUSPCL_IO__
 
+#if __PCL_SELECT == 0
 #include <pcl/io/pcd_io.h>
+#elif __PCL_SELECT == 17
+#include <pcl17/io/pcd_io.h>
+#endif
 
 // eus functions
 extern pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv);

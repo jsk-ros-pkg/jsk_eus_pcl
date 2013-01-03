@@ -46,8 +46,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
 else()
  add_definitions(-Di486)
 endif()
-
+add_definitions(-D__PCL_SELECT=17)
 rosbuild_add_compile_flags(eus_pcl ${COMPILE_FLAGS})
 
 set_target_properties(eus_pcl PROPERTIES PREFIX "" SUFFIX ".so")
-
