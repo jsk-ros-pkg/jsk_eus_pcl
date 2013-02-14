@@ -512,14 +512,17 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"STEP-POINTCLOUD", argv[0], (pointer (*)())PCL_STEP_POINTCLOUD);
 
   // euspcl_filters.cpp
-  defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_VOXEL_GRID);
+  defun (ctx, (char *)"DOWNSAMPLE", argv[0], (pointer (*)())PCL_VOXEL_GRID);
   defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES);
 
   // euspcl_features.cpp
-  defun (ctx, (char *)"ADD_NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
+  defun (ctx, (char *)"ADD-NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
+
+  // euspcl_octree.cpp
+  defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_OCT_VOXEL);
 
   // euspcl_registration.cpp
-  defun (ctx, (char *)"REGISTRATION_RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);
+  defun (ctx, (char *)"REGISTRATION-RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);
 
   // euspcl_sample_consensus.cpp
   defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION);
