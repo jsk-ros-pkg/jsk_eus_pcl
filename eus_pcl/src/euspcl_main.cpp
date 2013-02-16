@@ -35,13 +35,13 @@ pointer eval_c_string(register context *ctx, const char *strings) {
   pointer p, ret, qstream, qstring;
   int total_length;
 
-  total_length=strlen (strings);
+  total_length = strlen (strings);
   qstring = makebuffer (total_length);
   vpush (qstring);
 
   {
     const char *s = strings;
-    byte *d =qstring->c.str.chars;
+    byte *d = qstring->c.str.chars;
     while (*s) *d++ = *s++;
     *d++= '\n'; /* newline is needed to ensure the reader to stop ignoring comments */
   }
@@ -51,8 +51,8 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 
   qstream->c.stream.tail = makeint (total_length);
   while ((p = reader (ctx, qstream, NIL)) != (pointer)(-1)) {
-     if (debug) { prinx (ctx,p,STDOUT); terpri(STDOUT);  }
-     ret = eval (ctx, p);
+    if (debug) { prinx (ctx,p,STDOUT); terpri(STDOUT);  }
+    ret = eval (ctx, p);
   }
 
   vpop();
