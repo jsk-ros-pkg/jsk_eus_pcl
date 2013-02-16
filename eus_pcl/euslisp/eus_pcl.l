@@ -1,4 +1,4 @@
-(load "../lib/eus_pcl.so")
+(require :eus_pcl "package://eus_pcl/lib/eus_pcl.so")
 
 ;; pcl::SacModel
 (defvar pcl::*SACMODEL_PLANE* 0)
@@ -51,7 +51,6 @@
     (setq ret (instance pointcloud :init
                         :points pts :colors col :normals nom))
     ret))
-
 
 #|
 ;; pcd files were downloaded from pointclouds.org
