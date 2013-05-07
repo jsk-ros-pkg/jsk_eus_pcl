@@ -63,7 +63,7 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 pointer make_eus_pointcloud(register context *ctx,
                             pointer pos, pointer col, pointer nom, pointer cuv,
                             int width, int height) {
-  std::cerr << "make eus pcloud0" << std::endl;
+  // std::cerr << ";; make eus pcloud0" << std::endl;
   register pointer *local = ctx->vsp;
   pointer w, name;
   int pc;
@@ -106,7 +106,7 @@ pointer make_eus_pointcloud(register context *ctx,
 pointer make_eus_pointcloud(register context *ctx, pointer pcloud,
                             pointer pos, pointer col, pointer nom, pointer cuv,
                             int width, int height) {
-  std::cerr << "make eus pcloud1" << std::endl;
+  // std::cerr << ";; make eus pcloud1" << std::endl;
   if (pos != NIL) {
     set_to_pointcloud (ctx, pcloud, K_EUSPCL_POINTS, pos);
   }
@@ -186,7 +186,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt, point
 }
 
 pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, pointer pcloud) {
-  std::cerr << "make pcloud" << std::endl;
+  // std::cerr << ";; make pcloud" << std::endl;
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL;
