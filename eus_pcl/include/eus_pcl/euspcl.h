@@ -302,9 +302,9 @@ inline pointer convert_eigenmatrix_to_coordinates (register context *ctx, Eigen:
   int pc = 0;
   pos = makefvector (3);
   vpush (pos); pc++;
-  pos->c.fvec.fv[0] = tma (0, 3);
-  pos->c.fvec.fv[1] = tma (1, 3);
-  pos->c.fvec.fv[2] = tma (2, 3);
+  pos->c.fvec.fv[0] = tma (0, 3) * 1000.0;
+  pos->c.fvec.fv[1] = tma (1, 3) * 1000.0;
+  pos->c.fvec.fv[2] = tma (2, 3) * 1000.0;
 
   rot = makematrix (ctx, 3, 3);
   vpush (rot); pc++;
@@ -327,9 +327,9 @@ inline Eigen::Matrix4f convert_coordinates_to_eigenmatrix (register context *ctx
 
   Eigen::Matrix4f tma;
 
-  tma (0, 3) = pos->c.fvec.fv[0];
-  tma (1, 3) = pos->c.fvec.fv[1];
-  tma (2, 3) = pos->c.fvec.fv[2];
+  tma (0, 3) = pos->c.fvec.fv[0] * 0.001;
+  tma (1, 3) = pos->c.fvec.fv[1] * 0.001;
+  tma (2, 3) = pos->c.fvec.fv[2] * 0.001;
 
   {
     eusfloat_t *fv = rot->c.ary.entity->c.fvec.fv;
