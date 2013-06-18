@@ -34,6 +34,7 @@ CFLAGS += $(shell pkg-config --cflags pcl_surface-$(PCL_VERSION))
 CFLAGS += $(shell pkg-config --cflags pcl_registration-$(PCL_VERSION))
 CFLAGS += $(shell pkg-config --cflags pcl_visualization-$(PCL_VERSION))
 CFLAGS += $(shell pkg-config --cflags pcl_tracking-$(PCL_VERSION))
+CFLAGS += $(shell pkg-config --cflags eigen3)
 CFLAGS += -I$(shell pwd)/include
 
 LDFLAGS  = $(shell pkg-config --libs pcl_search-$(PCL_VERSION))
