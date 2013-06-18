@@ -12,7 +12,7 @@ using namespace pcl17;
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   PointCloud< PTYPE > ret_pcl_cloud;                                    \
   SACSegmentation< PTYPE > seg;                                         \
-  //SACSegmentationFromNormals< PTYPE, PTYPE > seg;                     \
+  /*SACSegmentationFromNormals< PTYPE, PTYPE > seg;*/                   \
   ModelCoefficients::Ptr out_coefficients (new ModelCoefficients);      \
   PointIndices::Ptr out_inliers (new PointIndices);                     \
   seg.setOptimizeCoefficients (optimize_coeff);                         \
@@ -20,18 +20,18 @@ using namespace pcl17;
   seg.setMethodType (sac_method_type);                                  \
   seg.setMaxIterations (sac_max_iter);                                  \
   seg.setDistanceThreshold (sac_distance_thre);                         \
-  seg.setRadiusLimits (sac_raidus_min, sac_radius_max);                 \
-  //seg.setProbability (double probability)                             \
-  //seg.setSamplesMaxDist (const double &radius, SearchPtr search)      \
-  //seg.setAxis (const Eigen::Vector3f &ax)                             \
-  //seg.setEpsAngle (double ea)                                         \
+  seg.setRadiusLimits (sac_radius_min, sac_radius_max);                 \
+  /*seg.setProbability (double probability); */                         \
+  /*seg.setSamplesMaxDist (const double &radius, SearchPtr search); */  \
+  /*seg.setAxis (const Eigen::Vector3f &ax); */                         \
+  /*seg.setEpsAngle (double ea); */                                     \
   seg.setInputCloud (pcl_cloud);                                        \
-  //seg.setInputNormals (pcl_cloud);                                    \
-  //seg.setNormalDistanceWeight (normal_distance_weight);               \
-  //seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle); \
-  //seg.setDistanceFromOrigin (const double d);                         \
+  /*seg.setInputNormals (pcl_cloud); */                                 \
+  /*seg.setNormalDistanceWeight (normal_distance_weight);*/             \
+  /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
+  /*seg.setDistanceFromOrigin (const double d);*/                       \
   seg.segment (*out_inliers, *out_coefficients);                        \
-  //std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
+  std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
   ExtractIndices< PTYPE > extract;                                      \
   extract.setInputCloud (pcl_cloud);                                    \
   extract.setIndices (out_inliers);                                     \
@@ -50,19 +50,48 @@ using namespace pcl17;
   }                                                                     \
   if (return_model_coefficients) {                                      \
     pointer coef = makefvector (out_coefficients->values.size());       \
-    vpush (corf); pc++;                                                 \
+    vpush (coef); pc++;                                                 \
     for (size_t i = 0; i < out_coefficients->values.size(); i++) {      \
       coef->c.fvec.fv[i] = out_coefficients->values[i];                 \
     }                                                                   \
-    ret = rawcons (coef, ret);                                          \
+    ret = rawcons (ctx, coef, ret);                                     \
     vpush (ret); pc++;                                                  \
   }
 
 #define SAC_SEGMENTATION_WITH_NORMAL_(PTYPE) \
-
-
+  /* model
+0 SACMODEL_PLANE,
+1 SACMODEL_LINE,
+2 SACMODEL_CIRCLE2D,
+3 SACMODEL_CIRCLE3D,
+4 SACMODEL_SPHERE,
+5 SACMODEL_CYLINDER,
+6 SACMODEL_CONE,
+7 SACMODEL_TORUS,
+8 SACMODEL_PARALLEL_LINE,
+SACMODEL_PERPENDICULAR_PLANE,
+SACMODEL_PARALLEL_LINES,
+SACMODEL_NORMAL_PLANE,
+SACMODEL_NORMAL_SPHERE,
+SACMODEL_REGISTRATION,
+SACMODEL_REGISTRATION_2D,
+SACMODEL_PARALLEL_PLANE,
+SACMODEL_NORMAL_PARALLEL_PLANE,
+SACMODEL_STICK
+  */
+  /* method
+SAC_RANSAC  = 0;
+SAC_LMEDS   = 1;
+SAC_MSAC    = 2;
+SAC_RRANSAC = 3;
+SAC_RMSAC   = 4;
+SAC_MLESAC  = 5;
+SAC_PROSAC  = 6;
+  */
 pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   /* (pointcloud &optional (model_type) (method_type) */
+  /* (max_iter 10000) (radius_min 0.0) (radius_max 0.1) (distance_thre 0.05) (optimize t) (extract_negative) */
+  /* (retrun_model) (return_indices) */
   pointer in_cloud;
   pointer points, colors, normals, curvatures;
   pointer ret = NIL;
@@ -91,6 +120,7 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   if (n > 1) {
     sac_model_type = SacModel(intval(argv[1]));
   }
+
   if (n > 2) {
     sac_method_type = intval(argv[2]);
   }
