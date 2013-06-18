@@ -12,7 +12,7 @@ using namespace pcl17;
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, NULL, NULL, width, height); \
   NormalEstimation< PTYPE, PNormal > no_est;                            \
   no_est.setInputCloud (pcl_cloud);                                     \
-  //                                                                    \
+  /* */                                                                 \
   search::KdTree<PTYPE>::Ptr tree (new search::KdTree<PTYPE> ());       \
   no_est.setSearchMethod (tree);                                        \
   if (radius > 1000.0) {                                                \
@@ -21,14 +21,15 @@ using namespace pcl17;
     no_est.setRadiusSearch (radius/1000.0);                             \
   }                                                                     \
   Normals::Ptr cloud_nm (new Normals);                                  \
-  // Compute the features                                               \
+  /* Compute the features */                                            \
   no_est.compute (*cloud_nm);                                           \
-  if (create) {                                                         \
-    ret = make_pointcloud_from_pcl (ctx, pcl_cloud, *cloud_nm);         \
+  if (create_pc) {                                                      \
+    ret = make_pointcloud_from_pcl (ctx, *pcl_cloud, *cloud_nm);        \
     vpush(ret); pc++;                                                   \
   } else {                                                              \
+    int len = (cloud_nm->width * cloud_nm->height);                     \
     pointer nom = makematrix (ctx, len, 3);                             \
-    pointer cuv = makefvector (len, 3);                                 \
+    pointer cuv = makefvector (len);                                    \
     vpush (nom); pc++;                                                  \
     vpush (cuv); pc++;                                                  \
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;                      \
@@ -38,7 +39,7 @@ using namespace pcl17;
       *fv++ = it->normal_x;                                             \
       *fv++ = it->normal_y;                                             \
       *fv++ = it->normal_z;                                             \
-      *cvf++ = it->curvature;                                           \
+      *cfv++ = it->curvature;                                           \
     }                                                                   \
     ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS, nom);      \
     ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_CURVATURES, cuv);   \
@@ -47,7 +48,7 @@ using namespace pcl17;
 pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
   /* ( pointcloud &optional (radius 30.0) (create nil) ) */
   pointer in_cloud;
-  pointer points, colors, normals;
+  pointer points, colors; //, normals;
   pointer ret = NIL;
   numunion nu;
   int pc = 0;
@@ -73,7 +74,7 @@ pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
   int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
   colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
-  normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  // normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
 
   if (points != NIL && colors != NIL) {
     ADD_NORMAL_(PointC, arg_rad);
