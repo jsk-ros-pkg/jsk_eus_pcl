@@ -57,8 +57,56 @@ using namespace pcl17;
     ret = rawcons (ctx, coef, ret);                                     \
     vpush (ret); pc++;                                                  \
   }
+#define SAC_SEGMENTATION_NORMAL_(PTYPE)                                 \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
+  PointCloud< PTYPE > ret_pcl_cloud;                                    \
+  SACSegmentationFromNormals< PTYPE, PTYPE > seg;                       \
+  ModelCoefficients::Ptr out_coefficients (new ModelCoefficients);      \
+  PointIndices::Ptr out_inliers (new PointIndices);                     \
+  seg.setOptimizeCoefficients (optimize_coeff);                         \
+  seg.setModelType (sac_model_type);                                    \
+  seg.setMethodType (sac_method_type);                                  \
+  seg.setMaxIterations (sac_max_iter);                                  \
+  seg.setDistanceThreshold (sac_distance_thre);                         \
+  seg.setRadiusLimits (sac_radius_min, sac_radius_max);                 \
+  /*seg.setProbability (double probability); */                         \
+  /*seg.setSamplesMaxDist (const double &radius, SearchPtr search); */  \
+  /*seg.setAxis (const Eigen::Vector3f &ax); */                         \
+  /*seg.setEpsAngle (double ea); */                                     \
+  seg.setInputCloud (pcl_cloud);                                        \
+  seg.setInputNormals (pcl_cloud);                                      \
+  /*seg.setNormalDistanceWeight (normal_distance_weight);*/             \
+  /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
+  /*seg.setDistanceFromOrigin (const double d);*/                       \
+  seg.segment (*out_inliers, *out_coefficients);                        \
+  std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
+  ExtractIndices< PTYPE > extract;                                      \
+  extract.setInputCloud (pcl_cloud);                                    \
+  extract.setIndices (out_inliers);                                     \
+  extract.setNegative (extract_negative);                               \
+  extract.filter (ret_pcl_cloud);                                       \
+  if (return_indices) {                                                 \
+    ret = makevector (C_INTVECTOR, out_inliers->indices.size());        \
+    vpush (ret); pc++;                                                  \
+    eusinteger_t *iv = ret->c.ivec.iv;                                  \
+    for (size_t i = 0; i < out_inliers->indices.size(); i++) {          \
+      iv[i] = out_inliers->indices[i];                                  \
+    }                                                                   \
+  } else {                                                              \
+    ret = make_pointcloud_from_pcl (ctx, ret_pcl_cloud);                \
+    vpush (ret); pc++;                                                  \
+  }                                                                     \
+  if (return_model_coefficients) {                                      \
+    pointer coef = makefvector (out_coefficients->values.size());       \
+    vpush (coef); pc++;                                                 \
+    for (size_t i = 0; i < out_coefficients->values.size(); i++) {      \
+      coef->c.fvec.fv[i] = out_coefficients->values[i];                 \
+    }                                                                   \
+    ret = rawcons (ctx, coef, ret);                                     \
+    vpush (ret); pc++;                                                  \
+  }
 
-#define SAC_SEGMENTATION_WITH_NORMAL_(PTYPE) \
   /* model
 0 SACMODEL_PLANE,
 1 SACMODEL_LINE,
@@ -165,11 +213,11 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
 
   if (points != NIL && colors != NIL && normals != NIL) {
-    SAC_SEGMENTATION_(PointCN);
+    SAC_SEGMENTATION_NORMAL_(PointCN);
   } else if (points != NIL && colors != NIL) {
     SAC_SEGMENTATION_(PointC);
   } else if (points != NIL && normals != NIL) {
-    SAC_SEGMENTATION_(PointN);
+    SAC_SEGMENTATION_NORMAL_(PointN);
   } else if (points != NIL) {
     SAC_SEGMENTATION_(Point);
   } else {
