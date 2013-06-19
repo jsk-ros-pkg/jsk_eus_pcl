@@ -43,6 +43,7 @@ using namespace pcl17;
     }                                                                   \
     ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS, nom);      \
     ret = set_to_pointcloud(ctx, in_cloud, K_EUSPCL_CURVATURES, cuv);   \
+    ret = in_cloud;                                                     \
   }
 
 pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
