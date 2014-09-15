@@ -68,7 +68,7 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
     break;
   }
 
-  icp->setInputCloud (a_ptr);
+  icp->setInputSource (a_ptr);
   icp->setInputTarget (b_ptr);
 
   Points Final;

@@ -64,7 +64,7 @@ pointer PCL_OCT_VOXEL (register context *ctx, int n, pointer *argv) {
 
   if (listp) {
     vpush (ret);
-    for (int i = 0; i < psize; i++) {
+    for (size_t i = 0; i < psize; i++) {
       pointer tmp = makefvector(3);
       eusfloat_t *fp = tmp->c.fvec.fv;
       *fp++ = cpts[i].x * 1000.0;
@@ -79,7 +79,7 @@ pointer PCL_OCT_VOXEL (register context *ctx, int n, pointer *argv) {
   } else {
     ret = makematrix(ctx, psize, 3);
     eusfloat_t *fp = ret->c.ary.entity->c.fvec.fv;
-    for (int i = 0; i < psize; i++) {
+    for (size_t i = 0; i < psize; i++) {
       *fp++ = cpts[i].x * 1000.0;
       *fp++ = cpts[i].y * 1000.0;
       *fp++ = cpts[i].z * 1000.0;

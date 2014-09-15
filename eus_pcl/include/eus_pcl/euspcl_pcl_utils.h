@@ -12,8 +12,8 @@ void stepPointCloud (__PCL_NS::PointCloud < PTYPE > &in_cloud,
   __PCL_NS::DefaultPointRepresentation< PTYPE > pr;
 
   if (xstep >= 1 && ystep >= 1) {
-    for (int ypos = yoffset; ypos < ylength; ypos += ystep) {
-      for (int xpos = xoffset; xpos < xlength; xpos += xstep) {
+    for (size_t ypos = yoffset; ypos < ylength; ypos += ystep) {
+      for (size_t xpos = xoffset; xpos < xlength; xpos += xstep) {
         PTYPE *it = &(in_cloud.points[(ypos * xlength) + xpos]);
         if (remove_nan) {
           if (!pr.isValid (*it)) {

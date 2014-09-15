@@ -70,7 +70,7 @@ pointer PCL_EXTRACT_EUCLIDEAN_CLUSTERS (register context *ctx, int n, pointer *a
     ret = makevector(C_INTVECTOR, width * height);
     vpush (ret); pc++;
     eusinteger_t *ret_vec = ret->c.ivec.iv;
-    for (size_t i = 0; i < width * height; i++ ) ret_vec[i] = -1;
+    for (int i = 0; i < width * height; i++ ) ret_vec[i] = -1;
 
     for (size_t i = 0; i < cluster_indices.size(); i++) {
       for (size_t j = 0; j < cluster_indices[i].indices.size(); j++ ) {
@@ -196,7 +196,7 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
 
     plane_seg.segment (*inliers, *coefficients);
 
-    if (inliers->indices.size() < min_plane_points) break;
+    if (inliers->indices.size() < (size_t)min_plane_points) break;
 
     if (coefficients->values.size () >=3 ) {
       pointer fvec = makefvector(4); vpush (fvec); pc++;
@@ -279,7 +279,7 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
     plane_num++;
 
     point_size -= inliers->indices.size();
-    if (point_size < min_plane_points) break;
+    if (point_size < (size_t)min_plane_points) break;
 #if DEBUG
     std::cerr << ";; TOTAL TIME = " << total_tm.elapsed() << std::endl << std::endl;
 #endif
