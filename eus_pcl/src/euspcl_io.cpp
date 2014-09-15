@@ -30,16 +30,9 @@ pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv) {
   fname.assign ((char *)get_string (argv[0]));
 
   {
-    sensor_msgs::PointCloud2 hdr;
-#if ( PCL_MAJOR_VERSION >= 1 && PCL_MINOR_VERSION >= 6 )
+    pcl::PCLPointCloud2 hdr;
     int ret = rd.readHeader(fname, hdr);
-#else
-    Eigen::Vector4f origin;
-    Eigen::Quaternionf orientation;
-    int pcd_version; int data_type; int data_index;
-    int ret = rd.readHeader (fname, hdr, origin, orientation,
-                             pcd_version, data_type, data_index);
-#endif
+
     if (ret != 0) {
       std::cerr << ";; read header error" << std::endl;
     } else {

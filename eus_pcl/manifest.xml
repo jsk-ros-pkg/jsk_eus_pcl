@@ -11,7 +11,7 @@
   <!--depend package="pcl"/-->
 
   <!-- using pcl_perception_unstable -->
-  <depend package="pcl17"/>
-
+  <depend package="pcl_ros"/>
+  <depend package="pcl_conversions"/>
   <!--rosdep name="pcl"/-->
 </package>
