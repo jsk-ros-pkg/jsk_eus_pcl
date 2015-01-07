@@ -109,10 +109,10 @@ pointer PCL_OCT_VOXEL (register context *ctx, int n, pointer *argv) {
 }
 
 pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
-  /* ( pointclouda pointcloudb &optional (resolution 40.0) */
+  /* ( pointclouda pointcloudb &optional (resolution 100.0) */
   pointer in_cloud_a, in_cloud_b ;
   pointer ret = NIL;
-  eusfloat_t resolution = 40.0;
+  eusfloat_t resolution = 100.0;
   numunion nu;
   int pc = 0;
   bool listp = false;
@@ -200,31 +200,40 @@ pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
 
   oct_b.getPointIndicesFromNewVoxels (new_idx_vec_a);
 
-  // remove new_idx_vec_a from pcl_cloud_a
+  PointCloud< Point > rap, rbp;
+  ROS_DEBUG("first points / removing points %d / %d\n",
+            new_idx_vec_a.size(),
+            pcl_cloud_a->points.size());
   {
     ExtractIndices< Point > ext_ind;
+    IndicesPtr pcl_indices (new Indices());
+    *pcl_indices = new_idx_vec_a;
     ext_ind.setInputCloud (pcl_cloud_a);
-    IndicesPtr pcl_indices (&new_idx_vec_a);
     ext_ind.setIndices (pcl_indices);
     ext_ind.setNegative (true);
-    ext_ind.filter (*pcl_cloud_a);
+    ext_ind.filter (rap);
   }
-  // remove new_idx_vec_b from pcl_cloud_b
+  ROS_DEBUG("second points / removing points %d / %d\n",
+            new_idx_vec_b.size(),
+            pcl_cloud_b->points.size());
   {
     ExtractIndices< Point > ext_ind;
+    IndicesPtr pcl_indices (new Indices());
+    *pcl_indices = new_idx_vec_b;
     ext_ind.setInputCloud (pcl_cloud_b);
-    IndicesPtr pcl_indices (&new_idx_vec_b);
     ext_ind.setIndices (pcl_indices);
     ext_ind.setNegative (true);
-    ext_ind.filter (*pcl_cloud_b);
+    ext_ind.filter (rbp);
   }
-
+  ROS_DEBUG("returning first points / second points %d / %d\n",
+            rap.points.size(),
+            rbp.points.size());
   {
     pointer ret_a = NIL;
     pointer ret_b = NIL;
-    ret_a = make_pointcloud_from_pcl (ctx, *pcl_cloud_a);
+    ret_a = make_pointcloud_from_pcl (ctx, rap);
     vpush(ret_a);
-    ret_b = make_pointcloud_from_pcl (ctx, *pcl_cloud_b);
+    ret_b = make_pointcloud_from_pcl (ctx, rbp);
     vpush(ret_b);
     ret = rawcons(ctx, ret_a, ret_b);
     vpop(); vpop();
