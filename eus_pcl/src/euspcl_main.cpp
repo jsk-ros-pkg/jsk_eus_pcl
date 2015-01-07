@@ -520,6 +520,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
 
   // euspcl_octree.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_OCT_VOXEL);
+  defun (ctx, (char *)"FILTER-CORRESPONDING-POINTS", argv[0], (pointer (*)())PCL_COR_PTS);
 
   // euspcl_registration.cpp
   defun (ctx, (char *)"REGISTRATION-RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);
