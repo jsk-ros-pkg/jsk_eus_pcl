@@ -201,9 +201,11 @@ pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
   oct_b.getPointIndicesFromNewVoxels (new_idx_vec_a);
 
   PointCloud< Point > rap, rbp;
-  ROS_DEBUG("first points / removing points %d / %d\n",
-            new_idx_vec_a.size(),
-            pcl_cloud_a->points.size());
+#if DEBUG
+  fprintf(stderr, "first points / removing points %d / %d\n",
+          new_idx_vec_a.size(),
+          pcl_cloud_a->points.size());
+#endif
   {
     ExtractIndices< Point > ext_ind;
     IndicesPtr pcl_indices (new Indices());
@@ -213,9 +215,11 @@ pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
     ext_ind.setNegative (true);
     ext_ind.filter (rap);
   }
-  ROS_DEBUG("second points / removing points %d / %d\n",
-            new_idx_vec_b.size(),
-            pcl_cloud_b->points.size());
+#if DEBUG
+  fprintf(stderr, "second points / removing points %d / %d\n",
+          new_idx_vec_b.size(),
+          pcl_cloud_b->points.size());
+#endif
   {
     ExtractIndices< Point > ext_ind;
     IndicesPtr pcl_indices (new Indices());
@@ -225,9 +229,11 @@ pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
     ext_ind.setNegative (true);
     ext_ind.filter (rbp);
   }
-  ROS_DEBUG("returning first points / second points %d / %d\n",
-            rap.points.size(),
-            rbp.points.size());
+#if DEBUG
+  fprintf(stderr, "returning first points / second points %d / %d\n",
+          rap.points.size(),
+          rbp.points.size());
+#endif
   {
     pointer ret_a = NIL;
     pointer ret_b = NIL;

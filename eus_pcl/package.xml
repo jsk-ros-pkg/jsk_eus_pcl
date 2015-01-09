@@ -1,0 +1,29 @@
+<package>
+  <name>eus_pcl</name>
+  <version>0.0.0</version>
+  <description>eus_pcl</description>
+
+  <maintainer email="youhei@jsk.imi.i.u-tokyo.ac.jp">Yohei Kakiuchi</maintainer>
+
+  <license>BSD</license>
+
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>euslisp</build_depend>
+  <build_depend>pcl</build_depend>
+  <build_depend>pkg-config</build_depend>
+
+  <run_depend>euslisp</run_depend>
+  <run_depend>pcl</run_depend>
+
+  <!-- <test_depend>euslisp</test_depend> -->
+  <!-- <test_depend>roseus</test_depend> -->
+
+  <export>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>

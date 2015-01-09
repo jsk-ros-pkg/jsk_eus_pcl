@@ -1,4 +1,4 @@
-(require :eus_pcl "package://eus_pcl/lib/eus_pcl.so")
+(require :eus_pcl "package://eus_pcl/euslisp/eus_pcl.so")
 
 ;; pcl::SacModel
 (defvar pcl::*SACMODEL_PLANE* 0)
