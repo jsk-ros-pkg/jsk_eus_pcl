@@ -51,7 +51,7 @@ pointer eval_c_string(register context *ctx, const char *strings) {
 
   qstream->c.stream.tail = makeint (total_length);
   while ((p = reader (ctx, qstream, NIL)) != (pointer)(-1)) {
-    if (debug) { prinx (ctx,p,STDOUT); terpri(STDOUT);  }
+    if (eus_debug) { prinx (ctx,p,STDOUT); terpri(STDOUT);  }
     ret = eval (ctx, p);
   }
 

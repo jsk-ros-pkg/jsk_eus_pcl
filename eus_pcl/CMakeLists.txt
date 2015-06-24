@@ -40,6 +40,7 @@ add_library(eus_pcl SHARED
   src/euspcl_recognition.cpp)
 
 set_target_properties(eus_pcl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
+set_target_properties(eus_pcl PROPERTIES PREFIX "" SUFFIX ".so")
 target_link_libraries(eus_pcl ${PCL_LIBRARIES})
 
 # compile flags

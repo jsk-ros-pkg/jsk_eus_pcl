@@ -67,6 +67,8 @@
 #undef string
 #undef iostream
 #undef complex
+#undef debug
+#define eus_debug (speval(QDEBUG)!=NIL) // this is same definition as debug in eus.h
 
 typedef __PCL_NS::PointXYZ    Point;
 typedef __PCL_NS::Normal      PNormal;
