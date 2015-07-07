@@ -29,6 +29,7 @@ using namespace pcl17;
 pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
 pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT, K_EUSPCL_SIZE_CHANGE;
 pointer K_EUSPCL_POS, K_EUSPCL_ROT;
+pointer K_EUSPCL_RESULT;
 pointer EUSPCL_CLS_PTS;
 
 pointer eval_c_string(register context *ctx, const char *strings) {
@@ -557,6 +558,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   K_EUSPCL_SIZE_CHANGE = defkeyword (ctx, (char *)"SIZE-CHANGE");
   K_EUSPCL_POS = defkeyword (ctx, (char *)"POS");
   K_EUSPCL_ROT = defkeyword (ctx, (char *)"ROT");
+  K_EUSPCL_RESULT = defkeyword (ctx, (char *)"RESULT");
 
   return 0;
 }

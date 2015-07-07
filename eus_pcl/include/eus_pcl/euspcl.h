@@ -20,6 +20,7 @@
 #include <map>
 #include <sstream>
 #include <cstdio>
+#include <limits>
 
 #ifndef __PCL_SELECT
 #define __PCL_SELECT 0 // 0: pcl_trunk / 17: perception_pcl_unstable
@@ -89,6 +90,7 @@ namespace __PCL_NS {
 extern pointer K_EUSPCL_INIT, K_EUSPCL_POINTS, K_EUSPCL_COLORS, K_EUSPCL_NORMALS, K_EUSPCL_CURVATURES;
 extern pointer K_EUSPCL_WIDTH, K_EUSPCL_HEIGHT, K_EUSPCL_SIZE_CHANGE;
 extern pointer K_EUSPCL_POS, K_EUSPCL_ROT;
+extern pointer K_EUSPCL_RESULT;
 extern pointer EUSPCL_CLS_PTS;
 
 extern pointer eval_c_string (register context *ctx, const char *strings);
@@ -289,6 +291,19 @@ inline pointer set_to_pointcloud(register context *ctx,
   ctx->vsp = local;
 
   return w;
+}
+
+inline pointer set_property (register context *ctx,
+                             pointer obj, pointer prop, pointer key) {
+  register pointer *local = ctx->vsp, w;
+  local[0]= obj;
+  local[1]= prop;
+  local[2]= key;
+  ctx->vsp = local+3;
+  w=(pointer)PUTPROP(ctx,3,local+0); /*putprop*/
+  ctx->vsp = local;
+
+  return w; // return NIL;
 }
 
 inline bool isPointCloud (pointer p) {

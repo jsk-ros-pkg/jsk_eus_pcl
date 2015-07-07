@@ -9,12 +9,15 @@ using namespace pcl17;
 
 pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   /* ( source_pointcloud target_pointcloud &optional (icp_type) (guess_coords)) */
+  numunion nu;
   pointer A_cloud, B_cloud;
   EUS_REGIST_TYPE icp_type = REGIST_SVD;
-  // TODO: parameter should be set
+
   Eigen::Matrix4f guess_mat;
   bool use_guess = false;
-  ckarg2(2, 4);//
+
+  if (n < 2) error(E_MISMATCHARG);
+
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
   }
@@ -25,12 +28,55 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   B_cloud = argv[1];
 
   if (n > 2) {
-    icp_type = EUS_REGIST_TYPE (intval(argv[2]));
+    if (argv[2] != NIL) icp_type = EUS_REGIST_TYPE (intval(argv[2]));
   }
   if (n > 3) {
-    use_guess = true;
-    guess_mat = convert_coordinates_to_eigenmatrix(ctx, argv[3]);
+    if (argv[3] != NIL) {
+      use_guess = true;
+      guess_mat = convert_coordinates_to_eigenmatrix(ctx, argv[3]);
+    }
   }
+  // extra arguments
+  int    _RANSACIterations               = 0;
+  double _RANSACOutlierRejectionThreshold= 0.05;
+  int    _MaximumIterations              = 10;
+  double _EuclideanFitnessEpsilon        = -std::numeric_limits<double>::max ();
+  double _TransformationEpsilon          = 0;
+  double _MaxCorrespondenceDistance      = (std::sqrt (std::numeric_limits<double>::max ()));
+  // gicp
+  double _RotationEpsilon            = 0.002;
+  int    _CorrespondenceRandomness   = 20;
+  int    _MaximumOptimizerIterations = 20;
+
+  if (n > 4 && argv[4] != NIL) {
+    _RANSACIterations = intval(argv[4]);
+  }
+  if (n > 5 && argv[5] != NIL) {
+    _RANSACOutlierRejectionThreshold = fltval(argv[5]);
+  }
+  if (n > 6 && argv[6] != NIL) {
+    _MaximumIterations = intval(argv[6]);
+  }
+  if (n > 7 && argv[7] != NIL) {
+    _EuclideanFitnessEpsilon = fltval(argv[7]);
+  }
+  if (n > 8 && argv[8] != NIL) {
+    _TransformationEpsilon = fltval(argv[8]);
+  }
+  if (n > 9 && argv[9] != NIL) {
+    _MaxCorrespondenceDistance = fltval(argv[9]);
+  }
+  //
+  if (n > 10 && argv[10] != NIL) {
+    _RotationEpsilon = fltval(argv[10]);
+  }
+  if (n > 11 && argv[11] != NIL) {
+    _CorrespondenceRandomness = intval(argv[11]);
+  }
+  if (n > 12 && argv[12] != NIL) {
+    _MaximumOptimizerIterations = intval(argv[12]);
+  }
+
 
   int a_width = intval (get_from_pointcloud (ctx, A_cloud, K_EUSPCL_WIDTH));
   int a_height = intval (get_from_pointcloud (ctx, A_cloud, K_EUSPCL_HEIGHT));
@@ -56,9 +102,39 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
     break;
   case REGIST_NL:
     icp.reset (new IterativeClosestPointNonLinear< Point, Point >());
+    icp->setRANSACIterations (_RANSACIterations);
+    icp->setRANSACOutlierRejectionThreshold (_RANSACOutlierRejectionThreshold);
+    icp->setMaximumIterations (_MaximumIterations);
+    icp->setEuclideanFitnessEpsilon (_EuclideanFitnessEpsilon);
+    icp->setTransformationEpsilon (_TransformationEpsilon);
+    icp->setMaxCorrespondenceDistance (_MaxCorrespondenceDistance);
+#if DEBUG
+    std::cout << "RANSACIterations               " << icp->getRANSACIterations () << std::endl;
+    std::cout << "RANSACOutlierRejectionThreshold" << icp->getRANSACOutlierRejectionThreshold () << std::endl;
+    std::cout << "MaximumIterations              " << icp->getMaximumIterations () << std::endl;
+    std::cout << "EuclideanFitnessEpsilon        " << icp->getEuclideanFitnessEpsilon () << std::endl;
+    std::cout << "TransformationEpsilon          " << icp->getTransformationEpsilon () << std::endl;
+    std::cout << "MaxCorrespondenceDistance      " << icp->getMaxCorrespondenceDistance () << std::endl;
+#endif
     break;
   case REGIST_GICP:
-    icp.reset (new GeneralizedIterativeClosestPoint< Point, Point >());
+    GeneralizedIterativeClosestPoint< Point, Point > *gicp;
+    gicp = new GeneralizedIterativeClosestPoint< Point, Point >();
+    gicp->setRotationEpsilon (_RotationEpsilon);
+    gicp->setCorrespondenceRandomness (_CorrespondenceRandomness);
+    gicp->setMaximumOptimizerIterations (_MaximumOptimizerIterations);
+#if DEBUG
+    std::cout << "getRotationEpsilon        " << gicp->getRotationEpsilon () << std::endl;
+    std::cout << "CorrespondenceRandomness  " << gicp->getCorrespondenceRandomness () << std::endl;
+    std::cout << "MaximumOptimizerIterations" << gicp->getMaximumOptimizerIterations () << std::endl;
+#endif
+    icp.reset (gicp);
+    icp->setRANSACIterations (_RANSACIterations);
+    icp->setRANSACOutlierRejectionThreshold (_RANSACOutlierRejectionThreshold);
+    icp->setMaximumIterations (_MaximumIterations);
+    icp->setEuclideanFitnessEpsilon (_EuclideanFitnessEpsilon);
+    icp->setTransformationEpsilon (_TransformationEpsilon);
+    icp->setMaxCorrespondenceDistance (_MaxCorrespondenceDistance);
     break;
   case REGIST_NDT:
     icp.reset (new NormalDistributionsTransform< Point, Point >());
@@ -78,10 +154,18 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
     icp->align (Final);
   }
 
-  //std::cout << "has converged:" << icp.hasConverged() << " score: " <<
-  //icp.getFitnessScore() << std::endl;
   Eigen::Matrix4f emat (icp->getFinalTransformation ());
   ret = convert_eigenmatrix_to_coordinates (ctx, emat);
+
+  { // add fitness score to coordinates
+    pointer lst;
+    vpush (lst); pc++;
+    lst = rawcons (ctx, icp->hasConverged()?T:NIL, NIL);
+    eusfloat_t sc = icp->getFitnessScore();
+    lst = rawcons (ctx, makeflt(sc), lst);
+    vpush (lst); pc++;
+    set_property (ctx, ret, lst, K_EUSPCL_RESULT);
+  }
 
   while (pc-- > 0) vpop();
   return ret;
