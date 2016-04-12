@@ -13,6 +13,8 @@
 #include "eus_pcl/euspcl_tracking.h"
 #include "eus_pcl/euspcl_recognition.h"
 
+#include "eus_pcl/euspcl_octomap.h"
+
 extern "C" {
   pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env);
   void register_eus_pcl(){
@@ -541,6 +543,16 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_recoginition.cpp
   defun (ctx, (char *)"ISM-TRAINING", argv[0], (pointer (*)())PCL_ISM_TRAINING);
   defun (ctx, (char *)"ISM-DETECTION", argv[0], (pointer (*)())PCL_ISM_DETECTION);
+
+  // euspcl_octomap.cpp
+  defun (ctx, (char *)"OCTOMAP-CREATE", argv[0], (pointer (*)())OCTOMAP_CREATE);
+  defun (ctx, (char *)"OCTOMAP-DELETE", argv[0], (pointer (*)())OCTOMAP_DELETE);
+  defun (ctx, (char *)"OCTOMAP-READ-NODES", argv[0], (pointer (*)())OCTOMAP_READ_NODES);
+  defun (ctx, (char *)"OCTOMAP-READ-UNKNOWN", argv[0], (pointer (*)())OCTOMAP_READ_UNKNOWN);
+  //defun (ctx, (char *)"OCTOMAP-DUMP-BINARY", argv[0], (pointer (*)())OCTOMAP_DUMP_BINARY);
+  //defun (ctx, (char *)"OCTOMAP-READ-BINARY", argv[0], (pointer (*)())OCTOMAP_READ_BINARY);
+  defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM);
+  defun (ctx, (char *)"OCTOMAP-ADD-POINTS", argv[0], (pointer (*)())OCTOMAP_ADD_POINTS);
 
 #ifdef USE_PACKAGE
   // reset package

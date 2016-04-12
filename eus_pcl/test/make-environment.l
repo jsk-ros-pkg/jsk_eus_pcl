@@ -43,11 +43,18 @@
 ))
 
 (objects *objs*)
-(objects (append *objs* (list *camera-model*)))
+
+#| ;; large camera
 (setq *camera-model*
       (make-camera-from-param :pwidth 640 :pheight 360
                               :fx 400 :fy 400
                               :cx 319.5 :cy 179.5 :name "camtest"
+                              :create-viewer t))
+|#
+(setq *camera-model*
+      (make-camera-from-param :pwidth 160 :pheight 120
+                              :fx 100 :fy 100
+                              :cx 79.5 :cy 59.5 :name "camtest"
                               :create-viewer t))
 
 (send *camera-model* :rotate -2.2 :x)
@@ -64,3 +71,33 @@
   ;; transform origin of point cloud
   (send *points* :transform (send *camera-model* :worldcoords))
   *points*)
+
+#|
+;;; demo octomap
+(get-points)
+;; clear near points
+(send *points* :filter :key #'(lambda (p) (< (norm p) 100)))
+(require :eus_pcl "package://eus_pcl/euslisp/eus_pcl.so")
+
+(setq ptr (pcl::octomap-create 30))
+
+(pcl::octomap-add-points ptr *points* #f(0 0 0))
+
+(setq a-pc (car (pcl::octomap-read-nodes ptr)))
+(setq u-pc (pcl::octomap-read-unknown ptr))
+
+(setq points-lst nil)
+(while (/= (send a-pc :size) 0)
+(let ((idx (random (send a-pc :size)))
+      pt)
+  (setq pt (matrix-row (send a-pc :points) idx))
+  (push pt points-lst)
+  (send a-pc :filter :key #'(lambda (p) (> (distance p pt) 60)))
+  (pprint (send a-pc :size))
+  ))
+
+(progn
+  (setq qq (instance pointcloud :init))
+  (send qq :points points-lst)
+  (send qq :point-color #f(1 0 0)))
+|#
