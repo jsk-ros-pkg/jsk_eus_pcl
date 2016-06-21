@@ -16,7 +16,6 @@
 
   <build_depend>euslisp</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
-  <build_depend>pcl_conversions</build_depend>
   <build_depend>octomap</build_depend>
   <build_depend>pkg-config</build_depend>
 
@@ -24,7 +23,6 @@
   <run_depend>euslisp</run_depend>
   <run_depend>libpcl-all</run_depend>
   <run_depend>octomap</run_depend>
-  <run_depend>pcl_conversions</run_depend>
 
   <!-- <test_depend>euslisp</test_depend> -->
   <!-- <test_depend>roseus</test_depend> -->

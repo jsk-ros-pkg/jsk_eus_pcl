@@ -7,7 +7,8 @@
 #include <pcl17/io/pcd_io.h>
 #endif
 
-#include <pcl_conversions/pcl_conversions.h>
+// not needed
+//#include <pcl_conversions/pcl_conversions.h>
 
 // eus functions
 extern pointer PCL_READ_PCD (register context *ctx, int n, pointer *argv);
