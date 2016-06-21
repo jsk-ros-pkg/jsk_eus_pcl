@@ -5,10 +5,14 @@ project(eus_pcl)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS euslisp)
 find_package(PCL REQUIRED)
+find_package(octomap REQUIRED)
 
 set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${CATKIN_DEVEL_PREFIX}/lib/pkgconfig")
 
 find_package(PkgConfig)
+
+message ("oct: ${OCTOMAP_LIBRARIES}")
+message ("pcl: ${PCL_LIBRARIES}")
 
 # CATKIN_MIGRATION: removed during catkin migration
 if(NOT euslisp_INCLUDE_DIRS)
@@ -22,7 +26,7 @@ if(NOT euslisp_INCLUDE_DIRS)
 endif()
 message("-- Set euslisp_INCLUDE_DIRS to ${euslisp_INCLUDE_DIRS}")
 
-include_directories(include /usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+include_directories(include /usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS})
 
 add_library(eus_pcl SHARED
   src/euspcl_main.cpp
@@ -37,11 +41,13 @@ add_library(eus_pcl SHARED
   src/euspcl_segmentation.cpp
   src/euspcl_surface.cpp
   src/euspcl_tracking.cpp
-  src/euspcl_recognition.cpp)
+  src/euspcl_recognition.cpp
+  src/euspcl_octomap.cpp
+  )
 
 set_target_properties(eus_pcl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
 set_target_properties(eus_pcl PROPERTIES PREFIX "" SUFFIX ".so")
-target_link_libraries(eus_pcl ${PCL_LIBRARIES})
+target_link_libraries(eus_pcl ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 # compile flags
 add_definitions(-fPIC -O2 -Wno-write-strings -Wno-comment)
