@@ -64,6 +64,68 @@
 
 ;;trained_ism_model.txt
 |#
+(unless (find-package "EUS_PCL") (make-package "EUS_PCL"))
+(in-package "EUS_PCL")
+
+;;
+;; euspcl_common
+;;
+(defun pca (point-cloud)
+  (pcl::pcl-pca point-cloud))
+
+;;;
+;;; euspcl_io
+;;;
+(defun write-pcd (fname point-cloud &key (binary t))
+  (pcl::write-pcd point-cloud fname binary))
+
+(defun read-pcd (fname)
+  (pcl::read-pcd fname))
+
+;;;
+;;; euspcl_filters
+;;;
+(defun down-sample (point-cloud &key (size-x 20.0) (size-y 20.0) (size-z 20.0))
+  (pcl::downsample point-cloud size-x size-y size-z))
+
+(defun extract-indices (point-cloud indices &key (negative nil) (create t))
+  (pcl::extract-indices point-cloud indices negative create))
+
+;;;
+;;; euspcl_features
+;;;
+(defun calc-normals (point-cloud &key (radius 30.0) (ksearch 0) (create nil))
+  (pcl::add-normal point-cloud create radius ksearch))
+
+;;;
+;;; euspcl_sample_consensus
+;;;
+(defun extract-plane (point-cloud &key (model-type pcl::*SACMODEL_PLANE*)
+                          (method-type pcl::*SAC_RANSAC*)
+                          (max-iteration 10000) (min-radius lisp::most-negative-float)
+                          (max-radius lisp::most-positive-float)
+                          (distance-threshold 50) (optimization t) (negative nil)
+                          (return-model nil) (return-indices nil))
+  (pcl::sac-segmentation point-cloud
+                         model-type method-type max-iteration
+                         min-radius max-radius distance-threshold
+                         optimization negative return-model
+                         return-indices))
+
+(defun make-plane-from-coefficients (coefficients)
+  (let ((nl (subseq coefficients 0 3))
+        (dist (elt coefficients 3)))
+    (setq dist (* 1000.0 (/ dist (norm nl))))
+    (user::make-plane :normal nl :distance dist)))
+
+;;;
+;;; euspcl_segmentation
+;;;
+(defun euclidean-clustering (point-cloud &key (min-size 500) (max-size 20000) (tolerance 20.0))
+  (pcl::extract-euclidean-clusters point-cloud
+                                   min-size max-size tolerance))
+
+(in-package "USER")
 
 ;; Obsolated. all codes below should be rewritten ugin euspcl.
 #|
