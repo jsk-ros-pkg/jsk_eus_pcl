@@ -71,7 +71,7 @@ endif()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    DEPENDS pcl
+    DEPENDS PCL
     CATKIN_DEPENDS # euslisp TODO
     INCLUDE_DIRS include # TODO include
     LIBRARIES eus_pcl # TODO

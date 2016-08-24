@@ -31,7 +31,7 @@ using namespace pcl17;
   /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
   /*seg.setDistanceFromOrigin (const double d);*/                       \
   seg.segment (*out_inliers, *out_coefficients);                        \
-  std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
+  /*std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; */ \
   ExtractIndices< PTYPE > extract;                                      \
   extract.setInputCloud (pcl_cloud);                                    \
   extract.setIndices (out_inliers);                                     \
@@ -80,7 +80,7 @@ using namespace pcl17;
   /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
   /*seg.setDistanceFromOrigin (const double d);*/                       \
   seg.segment (*out_inliers, *out_coefficients);                        \
-  std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; \
+  /* std::cerr << ";; solved coefficients: " << *out_coefficients << std::endl; */ \
   ExtractIndices< PTYPE > extract;                                      \
   extract.setInputCloud (pcl_cloud);                                    \
   extract.setIndices (out_inliers);                                     \
@@ -176,13 +176,13 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
     sac_max_iter = intval(argv[3]);
   }
   if (n > 4) {
-    sac_radius_min = fltval(argv[4]);
+    sac_radius_min = fltval(argv[4]) / 1000.0;
   }
   if (n > 5) {
-    sac_radius_max = fltval(argv[5]);
+    sac_radius_max = fltval(argv[5]) / 1000.0;
   }
   if (n > 6) {
-    sac_distance_thre = fltval(argv[6]);
+    sac_distance_thre = fltval(argv[6]) / 1000.0;
   }
   if (n > 7) {
     if (argv[7] == NIL) {

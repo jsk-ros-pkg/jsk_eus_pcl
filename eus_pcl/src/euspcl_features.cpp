@@ -7,7 +7,7 @@ using namespace pcl;
 using namespace pcl17;
 #endif
 
-#define ADD_NORMAL_(PTYPE, radius)                                      \
+#define ADD_NORMAL_(PTYPE, radius, ksearch)                             \
   PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, NULL, NULL, width, height); \
   NormalEstimation< PTYPE, PNormal > no_est;                            \
@@ -15,10 +15,10 @@ using namespace pcl17;
   /* */                                                                 \
   search::KdTree<PTYPE>::Ptr tree (new search::KdTree<PTYPE> ());       \
   no_est.setSearchMethod (tree);                                        \
-  if (radius > 1000.0) {                                                \
-    no_est.setKSearch (round(radius/1000.0));                           \
+  if (ksearch > 0) {                                                    \
+    no_est.setKSearch (ksearch);                                        \
   } else {                                                              \
-    no_est.setRadiusSearch (radius/1000.0);                             \
+    no_est.setRadiusSearch (radius);                                    \
   }                                                                     \
   Normals::Ptr cloud_nm (new Normals);                                  \
   /* Compute the features */                                            \
@@ -47,28 +47,32 @@ using namespace pcl17;
   }
 
 pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
-  /* ( pointcloud &optional (radius 30.0) (create nil) ) */
+  /* ( pointcloud &optional (create nil) (radius 30.0) (ksearch 0) */
   pointer in_cloud;
   pointer points, colors; //, normals;
   pointer ret = NIL;
   numunion nu;
   int pc = 0;
   bool create_pc = false;
-  eusfloat_t arg_rad = 30.0;
+  eusfloat_t arg_rad = 0.03;
+  eusinteger_t arg_ksearch = 0;
 
-  ckarg2(1, 3);
+  ckarg2(1, 4);
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
     return ret;
   }
   in_cloud = argv[0];
   if (n > 1) {
-    arg_rad = fltval (argv[1]);
-  }
-  if (n > 2) {
-    if (argv[2] != NIL) {
+    if (argv[1] != NIL) {
       create_pc = true;
     }
+  }
+  if (n > 2) {
+    arg_rad = fltval (argv[2]) / 1000.0;
+  }
+  if (n > 3) {
+    arg_ksearch = intval (argv[3]);
   }
 
   int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -78,9 +82,9 @@ pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
   // normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
 
   if (points != NIL && colors != NIL) {
-    ADD_NORMAL_(PointC, arg_rad);
+    ADD_NORMAL_(PointC, arg_rad, arg_ksearch);
   } else if (points != NIL) {
-    ADD_NORMAL_(Point, arg_rad);
+    ADD_NORMAL_(Point, arg_rad, arg_ksearch);
   } else {
     // warning there is no points.
   }
