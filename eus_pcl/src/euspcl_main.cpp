@@ -538,8 +538,8 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"EXTRACT-PLANES", argv[0], (pointer (*)())PCL_EXTRACT_PLANES);
 
   // euspcl_surface.cpp
-  defun (ctx, (char *)"CONVEX-HULL", argv[0], (pointer (*)())PCL_CONVEX_HULL);
-  defun (ctx, (char *)"CONVEX-HULL-PLANE", argv[0], (pointer (*)())PCL_CONVEX_HULL_PLANE);
+  defun (ctx, (char *)"SURFACE-CONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_CONSTRUCTION);
+  defun (ctx, (char *)"SURFACE-RECONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_RECONSTRUCTION);
 
   // euspcl_recoginition.cpp
   defun (ctx, (char *)"ISM-TRAINING", argv[0], (pointer (*)())PCL_ISM_TRAINING);

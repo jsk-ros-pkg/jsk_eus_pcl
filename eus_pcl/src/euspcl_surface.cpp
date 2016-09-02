@@ -191,30 +191,221 @@ int compute_lms (eusfloat_t *src, int ssize,
 }
 #endif
 
-pointer PCL_CONVEX_HULL (register context *ctx, int n, pointer *argv) {
+pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
+  /* point-cloud (type) (return-polygon) */
+  ckarg2(1, 3);
+
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+  }
   pointer in_cloud = argv[0];
+
+  SURFACE_CONSTRUCT_TYPE type = CONVEX_HULL;
+  if (n > 1) {
+    int intype = ckintval(argv[1]);
+    type = static_cast<SURFACE_CONSTRUCT_TYPE>(intype);
+  }
+
+  bool return_polygon = false;
+  if (n > 2) {
+    if (argv[2] != NULL) {
+      return_polygon = true;
+    }
+  }
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
   int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
   pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
+  pointer normal = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  int pc = 0;
+  pointer retcloud;
 
-  PointCloud< Point >::Ptr ptr =
-    make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
+  std::vector < pcl::Vertices > result_polygons;
 
-  PointCloud< Point >::Ptr cloud_hull (new PointCloud<Point>);
-  ConvexHull< Point > chull;
+  switch (type) {
+  case CONVEX_HULL:
+    {
+      PointCloud< Point >::Ptr ptr =
+        make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
+      PointCloud< Point >::Ptr result_points (new PointCloud<Point>);
 
-  chull.setInputCloud (ptr);
-  chull.reconstruct (*cloud_hull);
+      ConvexHull< Point > chull;
+      chull.setInputCloud (ptr);
+      if(return_polygon) {
+        chull.reconstruct (*result_points, result_polygons);
+        retcloud = make_pointcloud_from_pcl (ctx, *result_points);
+        vpush(retcloud); pc++;
+      } else {
+        chull.reconstruct (*result_points);
+        return make_pointcloud_from_pcl (ctx, *result_points);
+      }
+    }
+    break;
+  case CONCAVE_HULL:
+    {
+      PointCloud< Point >::Ptr ptr =
+        make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
+      PointCloud< Point >::Ptr result_points (new PointCloud<Point>);
 
-  return make_pointcloud_from_pcl (ctx, *cloud_hull);
+      ConcaveHull< Point > chull;
+      chull.setInputCloud (ptr);
+      double alpha = 0.05;
+      chull.setAlpha(alpha);
+      if(return_polygon) {
+        chull.reconstruct (*result_points, result_polygons);
+        retcloud = make_pointcloud_from_pcl (ctx, *result_points);
+        vpush(retcloud); pc++;
+      } else {
+        chull.reconstruct (*result_points);
+        return make_pointcloud_from_pcl (ctx, *result_points);
+      }
+    }
+    break;
+  case GREEDY_PROJECTION:
+    {
+      if (normal == NIL) {
+        error(E_USER, "this type needs pointcloud with normal");
+        return NIL;
+      }
+      PointCloud< PointNormal >::Ptr ptr =
+        make_pcl_pointcloud< PointNormal > (ctx, points, NULL, NULL, NULL, width, height);
+      pcl::GreedyProjectionTriangulation< PointNormal > gp3;
+      PointCloud< PointNormal >::Ptr result_points (new PointCloud <PointNormal>);
+
+      // Set the maximum distance between connected points (maximum edge length)
+      gp3.setSearchRadius (0.01);
+
+      // Set typical values for the parameters
+      gp3.setMu (2.5); // ??
+      gp3.setMaximumNearestNeighbors (100); // ??
+      gp3.setMaximumSurfaceAngle(M_PI/4); // 45 degrees
+      gp3.setMinimumAngle(M_PI/18); // 10 degrees
+      gp3.setMaximumAngle(2*M_PI/3); // 120 degrees
+      //gp3.setNormalConsistency(true); // ??
+
+      // Get result
+      gp3.setInputCloud (ptr);
+      gp3.reconstruct (result_polygons);
+      retcloud = in_cloud;
+      vpush(retcloud); pc++;
+    }
+    break;
+  default:
+    error(E_USER, "unknown type");
+    return NIL;
+  }
+  pointer retval = rawcons(ctx, retcloud, NIL);
+  pointer lastval = retval;
+  vpush(retval); pc++;
+
+  for (int i = 0; i < result_polygons.size(); i++) {
+    pointer ivec = makevector (C_INTVECTOR, result_polygons[i].vertices.size());
+    vpush(ivec); pc++;
+
+    pointer tmp = rawcons(ctx, ivec, NIL);
+    ccdr(lastval) = tmp;
+    lastval = tmp;
+    for(int j = 0; j < result_polygons[i].vertices.size(); j++) {
+      ivec->c.ivec.iv[j] = result_polygons[i].vertices[j];
+    }
+  }
+  while(pc-- > 0) vpop();
+  return retval;
 }
 
-pointer PCL_CONVEX_HULL_PLANE
-(register context *ctx, int n, pointer *argv) {
+pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv) {
+  /* point-cloud (type) */
+  ckarg2(1, 2);
 
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+  }
+  pointer in_cloud = argv[0];
+
+  SURFACE_RECONSTRUCT_TYPE type = POISSON;
+  if (n > 1) {
+    int intype = ckintval(argv[1]);
+    type = static_cast<SURFACE_RECONSTRUCT_TYPE>(intype);
+  }
+
+  int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_HEIGHT));
+  pointer points = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_POINTS);
+  pointer normal = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
+  if(normal == NIL) {
+    error(E_USER, "this function needs pointcloud with normal");
+  }
+  PointCloud< PointNormal >::Ptr ptr =
+    make_pcl_pointcloud< PointNormal > (ctx, points, NULL, normal, NULL, width, height);
+
+  PointCloud< PointNormal >::Ptr result_points (new PointCloud< PointNormal >);
+  std::vector < pcl::Vertices > result_polygons;
+
+  switch (type) {
+  case POISSON:
+    {
+      pcl::Poisson <PointNormal> surf_reconst;
+      // parameters
+      /*
+      void setDepth (int depth);
+      void setMinDepth (int min_depth);
+      void setPointWeight (float point_weight);
+      void setScale (float scale);
+      void setSolverDivide (int solver_divide);
+      void setIsoDivide (int iso_divide);
+      void setSamplesPerNode (float samples_per_node);
+      void setConfidence (bool confidence);
+      void setOutputPolygons (bool output_polygons);
+      bool getOutputPolygons ();
+      void setDegree (int degree);
+      void setManifold (bool manifold);
+      */
+
+      surf_reconst.setInputCloud (ptr);
+      surf_reconst.reconstruct(*result_points, result_polygons);
+    }
+    break;
+  case MARCHING_CUBES:
+    {
+      pcl::MarchingCubesHoppe <PointNormal> surf_reconst;
+      //pcl::MarchingCubesRBF <PointNormal> surf_reconst;
+      /*
+      void setIsoLevel (float iso_level);
+      void setGridResolution (int res_x, int res_y, int res_z);
+      void setPercentageExtendGrid (float percentage);
+      void setOffSurfaceDisplacement (float epsilon); //just for RDF
+      */
+
+      surf_reconst.setInputCloud (ptr);
+      surf_reconst.reconstruct(*result_points, result_polygons);
+    }
+    break;
+  default:
+    return NIL;
+  }
+
+  if (result_polygons.size() == 0) {
+    return NIL;
+  }
+
+  int pc = 0;
+  pointer retcloud = make_pointcloud_from_pcl (ctx, *result_points);
+  vpush(retcloud); pc++;
+  pointer retval = rawcons(ctx, retcloud, NIL);
+  pointer lastval = retval;
+  vpush(retval); pc++;
+
+  for (int i = 0; i < result_polygons.size(); i++) {
+    pointer ivec = makevector (C_INTVECTOR, result_polygons[i].vertices.size());
+    vpush(ivec); pc++;
+
+    pointer tmp = rawcons(ctx, ivec, NIL);
+    ccdr(lastval) = tmp;
+    lastval = tmp;
+    for(int j = 0; j < result_polygons[i].vertices.size(); j++) {
+      ivec->c.ivec.iv[j] = result_polygons[i].vertices[j];
+    }
+  }
+  while(pc-- >0) vpop();
+  return retval;
 }
-
-pointer PCL_CONCAVE_HULL (register context *ctx, int n, pointer *argv) { }
-
-pointer PCL_CONCAVE_HULL_PLANE (register context *ctx, int n, pointer *argv) { }
