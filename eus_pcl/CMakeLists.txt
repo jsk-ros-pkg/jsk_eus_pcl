@@ -43,6 +43,7 @@ add_library(eus_pcl SHARED
   src/euspcl_tracking.cpp
   src/euspcl_recognition.cpp
   src/euspcl_octomap.cpp
+  src/euspcl_kdtree.cpp
   )
 
 set_target_properties(eus_pcl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)

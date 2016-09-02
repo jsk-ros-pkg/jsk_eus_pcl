@@ -12,6 +12,7 @@
 #include "eus_pcl/euspcl_surface.h"
 #include "eus_pcl/euspcl_tracking.h"
 #include "eus_pcl/euspcl_recognition.h"
+#include "eus_pcl/euspcl_kdtree.h"
 
 #include "eus_pcl/euspcl_octomap.h"
 
@@ -553,6 +554,12 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   //defun (ctx, (char *)"OCTOMAP-READ-BINARY", argv[0], (pointer (*)())OCTOMAP_READ_BINARY);
   defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM);
   defun (ctx, (char *)"OCTOMAP-ADD-POINTS", argv[0], (pointer (*)())OCTOMAP_ADD_POINTS);
+
+  // euspcl_kdtree.cpp
+  defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH);
+  defun (ctx, (char *)"KDTREE-R-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_R_SEARCH);
+  defun (ctx, (char *)"KDTREE-CREATE", argv[0], (pointer (*)())PCL_KDTREE_CREATE);
+  defun (ctx, (char *)"KDTREE-DELETE", argv[0], (pointer (*)())PCL_KDTREE_DELETE);
 
 #ifdef USE_PACKAGE
   // reset package
