@@ -99,6 +99,45 @@
 ;;;
 ;;; euspcl_octomap
 ;;;
+(defclass octomap
+  :super propertied-object
+  :slots (ptr resolution type)
+  )
+(defmethod octomap
+  (:init
+   (resolution &key (type)
+               (max-bounding-box) (min-bounding-box))
+   (setq ptr (pcl::octomap-create resolution))
+   (sys::dispose-hook self t)
+   self
+   )
+  (:init-from-msg (msg) ;; msg is octomap_msgs/Octomap
+   ;; check message type (send msg :id)
+   (setq ptr (pcl::octomap-create (send msg :resolution)
+                                  (send msg :data)))
+   (if ptr self)
+   )
+  (:size () (when ptr pcl::octomap-node-num ptr))
+  (:add-points
+   (points &keh (origin (float-vector 0 0 0)))
+   (when ptr
+     (pcl::octomap-add-points ptr points origin)))
+  (:read-nodes
+   (&key (depth 0))
+   (when ptr
+     (pcl::octomap-read-nodes ptr depth)))
+  ;; (:search-ray
+  ;; (:points-node
+  ;; (:detect-change
+  (:read-unknown
+   (&key (depth 0) (max-bounding-box) (min-bounding-box))
+   (when ptr
+     (pcl::octomap-read-unknown ptr depth)))
+  (:dispose ()
+   (when ptr
+     (pcl::octomap-delete ptr)
+     (setq ptr nil)))
+  )
 
 ;;;
 ;;; euspcl_kdtree

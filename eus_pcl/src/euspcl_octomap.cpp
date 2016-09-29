@@ -17,25 +17,35 @@ pointer OCTOMAP_CREATE (register context *ctx, int n, pointer *argv) {
   if (n > 0) {
     resolution = ckfltval(argv[0]);
   }
-  if (n > 1) {
-    pointer min_vec = argv[1];
-    pmin.x() = min_vec->c.fvec.fv[0] / 1000;
-    pmin.y() = min_vec->c.fvec.fv[1] / 1000;
-    pmin.z() = min_vec->c.fvec.fv[2] / 1000;
-  }
-  if (n > 2) {
-    pointer max_vec = argv[2];
-    pmax.x() = max_vec->c.fvec.fv[0] / 1000;
-    pmax.y() = max_vec->c.fvec.fv[1] / 1000;
-    pmax.z() = max_vec->c.fvec.fv[2] / 1000;
-  }
-  printf("res = %f\n", resolution);
   octomap::OcTree *tree_ptr;
   tree_ptr = new octomap::OcTree ( resolution / 1000.0 );
 
+  if (n > 1 && isstring(argv[1])) {
+    // use binary data
+    std::stringstream datastream;
+    long len = strlength(argv[1]);
+    datastream.write((const char *)(argv[1]->c.str.chars), len);
+    tree_ptr->readBinaryData(datastream);
+
+    return makeint((eusinteger_t)tree_ptr);
+  } else {
+    if (n > 1) {
+      pointer min_vec = argv[1];
+      pmin.x() = min_vec->c.fvec.fv[0] / 1000;
+      pmin.y() = min_vec->c.fvec.fv[1] / 1000;
+      pmin.z() = min_vec->c.fvec.fv[2] / 1000;
+    }
+    if (n > 2) {
+      pointer max_vec = argv[2];
+      pmax.x() = max_vec->c.fvec.fv[0] / 1000;
+      pmax.y() = max_vec->c.fvec.fv[1] / 1000;
+      pmax.z() = max_vec->c.fvec.fv[2] / 1000;
+    }
+  }
+  // printf("res = %f\n", resolution);
   tree_ptr->setBBXMax(pmax);
   tree_ptr->setBBXMin(pmin);
-  tree_ptr->useBBXLimit(true);//???
+  tree_ptr->useBBXLimit(true); //???
 
   return makeint((eusinteger_t)tree_ptr);
 }
@@ -211,12 +221,18 @@ pointer OCTOMAP_ADD_POINTS (register context *ctx, int n, pointer *argv) {
   eusinteger_t ret = tree_ptr->calcNumNodes();
   return makeint(ret);
 }
-#if 0
-pointer OCTOMAP_DUMP_BINARY (register context *ctx, int n, pointer *argv) {
-  return NIL;
-}
 
-pointer OCTOMAP_READ_BINARY (register context *ctx, int n, pointer *argv) {
-  return NIL;
+pointer OCTOMAP_DUMP_BINARY (register context *ctx, int n, pointer *argv) {
+  octomap::OcTree *tree_ptr;
+  std::stringstream datastream;
+
+  ckarg(1);
+
+  tree_ptr = (octomap::OcTree *)(intval(argv[0]));
+
+  if (!tree_ptr->writeBinaryData(datastream)) {
+    return NIL;
+  }
+
+  return makestring((char *)datastream.str().c_str(), datastream.str().length());
 }
-#endif
