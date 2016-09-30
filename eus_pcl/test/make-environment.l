@@ -76,7 +76,7 @@
 ;;; demo octomap
 (get-points)
 ;; clear near points
-(send *points* :filter :key #'(lambda (p) (< (norm p) 100)))
+(send *points* :filter :key #'(lambda (p) (> (norm p) 100)))
 (require :eus_pcl "package://eus_pcl/euslisp/eus_pcl.so")
 
 (setq ptr (pcl::octomap-create 30))

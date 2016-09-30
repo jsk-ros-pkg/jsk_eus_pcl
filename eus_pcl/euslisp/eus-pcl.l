@@ -90,6 +90,22 @@
     (user::make-plane :normal nl :distance dist)))
 
 ;;;
+;;; euspcl_surface
+;;;
+(defun make-faces-from-polygon-result (point-cloud polygons)
+  (let ((mat (send point-cloud :points))
+        ret)
+    (dolist (polygon polygons)
+      (push
+       (instance geo::face :init :vertices
+                 (map cons #'(lambda (i) (user::c-matrix-row mat i)) polygon))
+       ret))
+    ret))
+(defun make-faceset-from-polygon-result (point-cloud polygons)
+  (instance geo::faceset :init :faces
+            (make-faces-from-polygon-result point-cloud polygons)))
+
+;;;
 ;;; euspcl_segmentation
 ;;;
 (defun euclidean-clustering (point-cloud &key (min-size 500) (max-size 20000) (tolerance 20.0))
@@ -177,6 +193,11 @@
   (:init ()
    (setq n 12)
    (setq trees (make-array n)))
+#|
+  (:insert-cloud
+   (point-cloud)
+   )
+|#
   (:insert (pt)
    (let (j)
      (block loop
@@ -206,7 +227,7 @@
        (setq pts (nreverse pts))
        (let ((p (instance user::pointcloud :init :points (list pt))))
          (when pts
-           (send p :append pts))
+           (send p :append pts :create nil))
          (aset trees j (instance kdtree :init p)))
        )
      (dotimes (i j) (aset trees i nil))
