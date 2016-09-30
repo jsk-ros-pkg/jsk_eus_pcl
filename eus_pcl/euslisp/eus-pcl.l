@@ -120,24 +120,41 @@
   :slots (ptr resolution type)
   )
 (defmethod octomap
-  (:init
-   (resolution &key (type)
+  (:init (&key ((resolution r) 50) (type)
                (max-bounding-box) (min-bounding-box))
+   (setq resolution r)
    (setq ptr (pcl::octomap-create resolution))
    (sys::dispose-hook self t)
-   self
-   )
+   self)
   (:init-from-msg (msg) ;; msg is octomap_msgs/Octomap
    ;; check message type (send msg :id)
-   (setq ptr (pcl::octomap-create (send msg :resolution)
-                                  (send msg :data)))
-   (if ptr self)
-   )
-  (:size () (when ptr pcl::octomap-node-num ptr))
+   (when (string= (send msg :id) "OcTree")
+     (setq type (send msg :id))
+     (setq resolution (* (send msg :resolution) 1000.0))
+     (setq ptr (pcl::octomap-create
+                resolution (coerce (send msg :data) string)
+                (send msg :binary)))
+     (if ptr self)
+     ))
+  (:dump (&optional binary) (pcl::octomap-dump-data ptr binary))
+  (:resolution (&optional r) (pcl::octomap-resolution ptr r))
+  (:bounding-box
+   (&key (bounding-box-min) (bounding-box-max))
+   (pcl::octomap-bounding-box ptr bounding-box-min bounding-box-max))
+  (:bounding-box-info () (pcl::octomap-bounding-box-info ptr))
+  (:clamping-threshold
+   (&key (clamping-min) (clamping-max))
+   (pcl::octomap-clamping-threshold ptr clamping-min clamping-max))
+  (:metric-info () (pcl::octomap-metrix-info ptr))
+  (:occupancy-threshold (&optional thre) (pcl::octomap-occupancy-threshold ptr thre))
+  (:probability (&key (hit) (miss)) (pcl::octomap-probability ptr hit miss))
+  (:get-tree-info () (pcl::octomap-get-tree-info ptr))
+  (:use-bounding-box-limit (&optional (enable t)) (pcl::octomap-use-bbx-limit ptr enable))
+  (:number-of-nodes () (when ptr (pcl::octomap-node-num ptr)))
   (:add-points
-   (points &keh (origin (float-vector 0 0 0)))
+   (point-cloud &keh (origin (float-vector 0 0 0)))
    (when ptr
-     (pcl::octomap-add-points ptr points origin)))
+     (pcl::octomap-add-points ptr point-cloud origin)))
   (:read-nodes
    (&key (depth 0))
    (when ptr

@@ -552,7 +552,17 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"OCTOMAP-READ-UNKNOWN", argv[0], (pointer (*)())OCTOMAP_READ_UNKNOWN);
   defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM);
   defun (ctx, (char *)"OCTOMAP-ADD-POINTS", argv[0], (pointer (*)())OCTOMAP_ADD_POINTS);
-  defun (ctx, (char *)"OCTOMAP-DUMP-BINARY", argv[0], (pointer (*)())OCTOMAP_DUMP_BINARY);
+  defun (ctx, (char *)"OCTOMAP-DUMP-DATA", argv[0], (pointer (*)())OCTOMAP_DUMP_DATA);
+  defun (ctx, (char *)"OCTOMAP-RESOLUTION", argv[0], (pointer (*)())OCTOMAP_RESOLUTION);
+  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX);
+
+  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX-INFO", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX_INFO);
+  defun (ctx, (char *)"OCTOMAP-CLAMPING-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_CLAMPING_THRESHOLD);
+  defun (ctx, (char *)"OCTOMAP-METRIC-INFO", argv[0], (pointer (*)())OCTOMAP_METRIC_INFO);
+  defun (ctx, (char *)"OCTOMAP-OCCUPANCY-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_OCCUPANCY_THRESHOLD);
+  defun (ctx, (char *)"OCTOMAP-PROBABILITY", argv[0], (pointer (*)())OCTOMAP_PROBABILITY);
+  defun (ctx, (char *)"OCTOMAP-GET-TREE-INFO", argv[0], (pointer (*)())OCTOMAP_GET_TREE_INFO);
+  defun (ctx, (char *)"OCTOMAP-USE-BBX-LIMIT", argv[0], (pointer (*)())OCTOMAP_USE_BBX_LIMIT);
 
   // euspcl_kdtree.cpp
   defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH);
