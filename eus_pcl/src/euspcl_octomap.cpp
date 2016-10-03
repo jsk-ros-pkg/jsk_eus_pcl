@@ -353,12 +353,17 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
   numunion nu;
   octomap::OcTree *tree_ptr;
 
-  ckarg2(1, 2);
+  ckarg2(1, 3);
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
   int depth = 0;
   if (n > 1) {
     depth = ckintval(argv[1]);
+  }
+
+  bool return_free = true;
+  if (n > 2 && argv[2] == NIL) {
+    return_free = false;
   }
 
   PointCloud< Point > occ_points;
@@ -371,15 +376,18 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
               it.getZ());
       occ_points.push_back(p);
     } else { // free
-      Point p(it.getX(),
-              it.getY(),
-              it.getZ());
-      free_points.push_back(p);
+      if (return_free) {
+        Point p(it.getX(),
+                it.getY(),
+                it.getZ());
+        free_points.push_back(p);
+      }
     }
   }
 
+
   pointer ret = NIL;
-  {
+  if (return_free) {
     pointer ret_free = make_pointcloud_from_pcl (ctx, free_points);
     vpush(ret_free);
     ret = rawcons (ctx, ret_free, ret);
@@ -388,6 +396,8 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
     vpush(ret_occ);
     ret = rawcons (ctx, ret_occ, ret);
     vpop(); vpop();
+  } else {
+    ret = make_pointcloud_from_pcl (ctx, occ_points);
   }
 
   return ret;
