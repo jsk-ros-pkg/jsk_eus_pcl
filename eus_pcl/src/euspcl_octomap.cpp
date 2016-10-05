@@ -349,7 +349,7 @@ pointer OCTOMAP_NODE_NUM (register context *ctx, int n, pointer *argv) {
 }
 
 pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
-  /* octree_pointer (depth) -> (occupied_points freer_points) */
+  /* octree_pointer (depth) (return_free) -> (occupied_points free_points) */
   numunion nu;
   octomap::OcTree *tree_ptr;
 
@@ -384,7 +384,6 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
       }
     }
   }
-
 
   pointer ret = NIL;
   if (return_free) {
@@ -568,9 +567,14 @@ pointer OCTOMAP_SEARCH_RAY (register context *ctx, int n, pointer *argv) {
       //nd->getValue();
       occ_fvec->c.fvec.fv[count] = nd->getOccupancy();
     }
-    octomap::point3d pt = tree_ptr->keyToCoord(*it, depth);
+    octomap::point3d pt;
+    if (depth == 0) {
+      pt = tree_ptr->keyToCoord(*it);
+    } else {
+      pt = tree_ptr->keyToCoord(*it, depth);
+    }
     Point p(pt.x(), pt.y(), pt.z());
-    ray_points.push_back(p);
+    ray_points.points.push_back(p);
     count++;
   }
 
