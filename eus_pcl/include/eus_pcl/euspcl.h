@@ -76,12 +76,16 @@ typedef __PCL_NS::Normal      PNormal;
 typedef __PCL_NS::PointXYZRGB PointC;
 typedef __PCL_NS::PointNormal PointN;
 typedef __PCL_NS::PointXYZRGBNormal PointCN;
+typedef __PCL_NS::RGB         PColor;
+typedef __PCL_NS::Intensity   PIntensity;
 
 typedef __PCL_NS::PointCloud< Point >   Points;
 typedef __PCL_NS::PointCloud< PNormal > Normals;
 typedef __PCL_NS::PointCloud< PointN >  PointsN;
 typedef __PCL_NS::PointCloud< PointC >  PointsC;
 typedef __PCL_NS::PointCloud< PointCN > PointsCN;
+typedef __PCL_NS::PointCloud< PColor > Colors;
+typedef __PCL_NS::PointCloud< PIntensity > Intensities;
 
 namespace __PCL_NS {
   typedef std::vector< int > Indices;
@@ -111,6 +115,12 @@ extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt
                                          const Normals &nm, pointer pcloud = NULL);
 extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
                                          const Normals &nm, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                         const Colors &cols, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt,
+                                         const Colors &cols, pointer pcloud = NULL);
+extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                         const Colors &cols, const Normals &nm, pointer pcloud = NULL);
 
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           eusfloat_t *cvt, int width, int height, Points &pt) {
