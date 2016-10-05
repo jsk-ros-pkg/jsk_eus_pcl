@@ -120,7 +120,7 @@
   :slots (ptr resolution type)
   )
 (defmethod octomap
-  (:init (&key ((resolution r) 50) (type)
+  (:init (&key ((:resolution r) 50) (type)
                (max-bounding-box) (min-bounding-box))
    (setq resolution r)
    (setq ptr (pcl::octomap-create resolution))
@@ -152,13 +152,13 @@
   (:use-bounding-box-limit (&optional (enable t)) (pcl::octomap-use-bbx-limit ptr enable))
   (:number-of-nodes () (when ptr (pcl::octomap-node-num ptr)))
   (:add-points
-   (point-cloud &keh (origin (float-vector 0 0 0)))
+   (point-cloud &key (origin (float-vector 0 0 0)))
    (when ptr
      (pcl::octomap-add-points ptr point-cloud origin)))
   (:read-nodes
-   (&key (depth 0))
+   (&key (depth 0) (return-free nil))
    (when ptr
-     (pcl::octomap-read-nodes ptr depth)))
+     (pcl::octomap-read-nodes ptr depth return-free)))
   ;; (:search-ray
   ;; (:points-node
   ;; (:detect-change
@@ -166,6 +166,9 @@
    (&key (depth 0) (max-bounding-box) (min-bounding-box))
    (when ptr
      (pcl::octomap-read-unknown ptr depth)))
+  (:search-ray
+   (ray-origin ray-ends &key (depth 0))
+   (pcl::octomap-search-ray ptr ray-origin ray-ends depth))
   (:dispose ()
    (when ptr
      (pcl::octomap-delete ptr)
