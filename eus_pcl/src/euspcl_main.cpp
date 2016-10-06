@@ -208,10 +208,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, poin
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
       // color
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>(&(it->rgb));
-      *fvc++ = ((int_rgb & 0x00FF0000) >> 16) / 255.0;
-      *fvc++ = ((int_rgb & 0x0000FF00) >> 8 ) / 255.0;
-      *fvc++ = ((int_rgb & 0x000000FF) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
     }
   }
 
@@ -293,10 +292,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, poi
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
       // color
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
       // normal
       *nfv++ = it->normal_x;
       *nfv++ = it->normal_y;
@@ -384,10 +382,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
       // color
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
     }
   }
 
@@ -444,10 +441,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
     eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
     for (Colors::const_iterator it = cols.begin();
          it != cols.end(); it++) {
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
     }
   }
 
@@ -499,11 +495,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt,
     eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
     for (Colors::const_iterator it = cols.begin();
          it != cols.end(); it++) {
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-
-      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
     }
   }
 
@@ -544,11 +538,9 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
     eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
     for (Colors::const_iterator it = cols.begin();
          it != cols.end(); it++) {
-      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-
-      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (it->r)/255.0;
+      *fvc++ = (it->g)/255.0;
+      *fvc++ = (it->b)/255.0;
     }
   }
 
