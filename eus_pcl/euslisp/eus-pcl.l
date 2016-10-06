@@ -156,11 +156,10 @@
    (when ptr
      (pcl::octomap-add-points ptr point-cloud origin)))
   (:read-nodes
-   (&key (depth 0) (return-free nil))
+   (&key (depth 0) (return-free nil) (return-both) (with-color))
    (when ptr
-     (pcl::octomap-read-nodes ptr depth return-free)))
-  ;; (:search-ray
-  ;; (:points-node
+     (pcl::octomap-read-nodes ptr depth return-free return-both with-color)))
+  ;; (:points-check
   ;; (:detect-change
   (:read-unknown
    (&key (depth 0) (max-bounding-box) (min-bounding-box))

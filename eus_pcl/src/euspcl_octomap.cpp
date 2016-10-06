@@ -1,6 +1,7 @@
 #include "eus_pcl/euspcl.h"
 
 #include <octomap/octomap.h>
+#include <pcl/point_types_conversion.h>
 
 #if __PCL_SELECT == 0
 using namespace pcl;
@@ -348,12 +349,24 @@ pointer OCTOMAP_NODE_NUM (register context *ctx, int n, pointer *argv) {
   return makeint(ret);
 }
 
+#define setColorRing(col,val)                   \
+  {                                             \
+    pcl::PointXYZHSV in;                        \
+    pcl::PointXYZRGB out;                       \
+    in.h = 240 * val;                           \
+    in.s = 1.0;                                 \
+    in.v = 1.0;                                 \
+    pcl::PointXYZHSVtoXYZRGB(in, out);          \
+    col.rgb = out.rgb;                          \
+  }
+
 pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
-  /* octree_pointer (depth) (return_free) -> (occupied_points free_points) */
+  /* octree_pointer (depth) (return_free) (return_both) (with_color)
+     -> (occupied_points free_points) */
   numunion nu;
   octomap::OcTree *tree_ptr;
 
-  ckarg2(1, 3);
+  ckarg2(1, 5);
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
   int depth = 0;
@@ -366,37 +379,102 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
     return_free = false;
   }
 
-  PointCloud< Point > occ_points;
-  PointCloud< Point > free_points;
-  for (octomap::OcTree::iterator it = tree_ptr->begin(depth), end = tree_ptr->end();
+  bool return_both = false;
+  if (n > 3 && argv[3] != NIL) {
+    return_both = true;
+  }
+
+  bool with_color = false;
+  if (n > 4 && argv[4] != NIL) {
+    with_color = true;
+  }
+
+  Points occ_points;
+  Colors occ_cols;
+  Points free_points;
+  Colors free_cols;
+
+  // TODO: if not expanding tree, we will get nodes with several depth valus.
+  //       it causes that we should draw different size of cubes for visualizing.
+  tree_ptr->expand();
+  for (octomap::OcTree::leaf_iterator it = tree_ptr->begin_leafs(depth),
+                                      end = tree_ptr->end_leafs();
        it != end; ++it) {
-    if (tree_ptr->isNodeOccupied(*it)) { // occupied
-      Point p(it.getX(),
-              it.getY(),
-              it.getZ());
+    if (return_both || tree_ptr->isNodeOccupied(*it)) { // occupied
+#if 0 // DEBUG
+      {
+        octomap::OcTreeKey key = it.getIndexKey();
+        octomap::point3d pt = it.getCoordinate();
+        printf("%f %f %f / %d %d %d / %d\n",
+               pt.x(), pt.y(), pt.z(),
+               key[0],key[1],key[2],
+               it.getDepth());
+      }
+#endif
+      octomap::point3d pt = it.getCoordinate();
+      Point p(pt.x(), pt.y(), pt.z());
       occ_points.push_back(p);
+      if (return_both) {
+        float occup = it->getOccupancy();
+        if (with_color) {
+          PColor col;
+          setColorRing(col,occup);
+          occ_cols.push_back(col);
+        } else {
+          // gray
+          PColor col;
+          col.r = static_cast<uint8_t> (occup*255);
+          col.g = static_cast<uint8_t> (occup*255);
+          col.b = static_cast<uint8_t> (occup*255);
+          occ_cols.push_back(col);
+        }
+      } else if (with_color) {
+        float occup = it->getOccupancy();
+        PColor col;
+        setColorRing(col,occup);
+        occ_cols.push_back(col);
+      }
     } else { // free
       if (return_free) {
-        Point p(it.getX(),
-                it.getY(),
-                it.getZ());
+        octomap::point3d pt = it.getCoordinate();
+        Point p(pt.x(), pt.y(), pt.z());
         free_points.push_back(p);
+        if (with_color) {
+          float occup = it->getOccupancy();
+          PColor col;
+          setColorRing(col,occup);
+          free_cols.push_back(col);
+        }
       }
     }
   }
 
   pointer ret = NIL;
-  if (return_free) {
-    pointer ret_free = make_pointcloud_from_pcl (ctx, free_points);
+  if (return_free && !return_both) {
+    pointer ret_free;
+    if (with_color) {
+      ret_free = make_pointcloud_from_pcl (ctx, free_points, free_cols);
+    } else {
+      ret_free = make_pointcloud_from_pcl (ctx, free_points);
+    }
     vpush(ret_free);
     ret = rawcons (ctx, ret_free, ret);
     vpop(); vpush(ret);
-    pointer ret_occ = make_pointcloud_from_pcl (ctx, occ_points);
+    pointer ret_occ;
+    if (with_color) {
+      ret_occ = make_pointcloud_from_pcl (ctx, occ_points, occ_cols);
+    } else {
+      ret_occ = make_pointcloud_from_pcl (ctx, occ_points);
+    }
     vpush(ret_occ);
     ret = rawcons (ctx, ret_occ, ret);
     vpop(); vpop();
   } else {
-    ret = make_pointcloud_from_pcl (ctx, occ_points);
+    if (with_color || return_both) {
+      ret = make_pointcloud_from_pcl (ctx, occ_points, occ_cols);
+    } else {
+      ret = make_pointcloud_from_pcl (ctx, occ_points);
+    }
   }
 
   return ret;
