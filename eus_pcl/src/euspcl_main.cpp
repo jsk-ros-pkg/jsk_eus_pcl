@@ -563,6 +563,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"OCTOMAP-PROBABILITY", argv[0], (pointer (*)())OCTOMAP_PROBABILITY);
   defun (ctx, (char *)"OCTOMAP-GET-TREE-INFO", argv[0], (pointer (*)())OCTOMAP_GET_TREE_INFO);
   defun (ctx, (char *)"OCTOMAP-USE-BBX-LIMIT", argv[0], (pointer (*)())OCTOMAP_USE_BBX_LIMIT);
+  defun (ctx, (char *)"OCTOMAP-SEARCH-RAY", argv[0], (pointer (*)())OCTOMAP_SEARCH_RAY);
 
   // euspcl_kdtree.cpp
   defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH);

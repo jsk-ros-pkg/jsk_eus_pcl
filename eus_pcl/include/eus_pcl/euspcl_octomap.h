@@ -18,5 +18,6 @@ extern pointer OCTOMAP_OCCUPANCY_THRESHOLD (register context *ctx, int n, pointe
 extern pointer OCTOMAP_PROBABILITY (register context *ctx, int n, pointer *argv);
 extern pointer OCTOMAP_GET_TREE_INFO (register context *ctx, int n, pointer *argv);
 extern pointer OCTOMAP_USE_BBX_LIMIT (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_SEARCH_RAY (register context *ctx, int n, pointer *argv);
 
 #endif

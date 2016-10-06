@@ -349,16 +349,21 @@ pointer OCTOMAP_NODE_NUM (register context *ctx, int n, pointer *argv) {
 }
 
 pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
-  /* octree_pointer (depth) -> (occupied_points freer_points) */
+  /* octree_pointer (depth) (return_free) -> (occupied_points free_points) */
   numunion nu;
   octomap::OcTree *tree_ptr;
 
-  ckarg2(1, 2);
+  ckarg2(1, 3);
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
   int depth = 0;
   if (n > 1) {
     depth = ckintval(argv[1]);
+  }
+
+  bool return_free = true;
+  if (n > 2 && argv[2] == NIL) {
+    return_free = false;
   }
 
   PointCloud< Point > occ_points;
@@ -371,15 +376,17 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
               it.getZ());
       occ_points.push_back(p);
     } else { // free
-      Point p(it.getX(),
-              it.getY(),
-              it.getZ());
-      free_points.push_back(p);
+      if (return_free) {
+        Point p(it.getX(),
+                it.getY(),
+                it.getZ());
+        free_points.push_back(p);
+      }
     }
   }
 
   pointer ret = NIL;
-  {
+  if (return_free) {
     pointer ret_free = make_pointcloud_from_pcl (ctx, free_points);
     vpush(ret_free);
     ret = rawcons (ctx, ret_free, ret);
@@ -388,6 +395,8 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
     vpush(ret_occ);
     ret = rawcons (ctx, ret_occ, ret);
     vpop(); vpop();
+  } else {
+    ret = make_pointcloud_from_pcl (ctx, occ_points);
   }
 
   return ret;
@@ -449,7 +458,7 @@ pointer OCTOMAP_READ_UNKNOWN (register context *ctx, int n, pointer *argv) {
       for (int z = start_idx[2]; z <= end_idx[2]; z++) {
         pt.z() = (z - 0.5) * step_size;
         res = tree_ptr->search(pt, depth);
-          if (res == NULL) {
+        if (res == NULL) {
           Point p(pt.x(), pt.y(), pt.z());
           pc.push_back(p);
         }
@@ -497,6 +506,84 @@ pointer OCTOMAP_ADD_POINTS (register context *ctx, int n, pointer *argv) {
 
   eusinteger_t ret = tree_ptr->calcNumNodes();
   return makeint(ret);
+}
+
+pointer OCTOMAP_SEARCH_RAY (register context *ctx, int n, pointer *argv) {
+  /* octree_pointer ray_origin ray_ends (depth) */
+  numunion nu;
+  octomap::OcTree *tree_ptr;
+
+  ckarg2(3, 4);
+
+  tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
+  octomap::point3d rstart, rend;
+
+  if (n > 1 && isfltvector(argv[1])) {
+    pointer s_vec = argv[1];
+    rstart.x() = s_vec->c.fvec.fv[0] * 0.001;
+    rstart.y() = s_vec->c.fvec.fv[1] * 0.001;
+    rstart.z() = s_vec->c.fvec.fv[2] * 0.001;
+  }
+  if (n > 2 && isfltvector(argv[2])) {
+    pointer e_vec = argv[2];
+    rend.x() = e_vec->c.fvec.fv[0] * 0.001;
+    rend.y() = e_vec->c.fvec.fv[1] * 0.001;
+    rend.z() = e_vec->c.fvec.fv[2] * 0.001;
+  }
+  int depth = 0;
+  if (n > 3) {
+    depth = ckintval(argv[3]);
+  }
+  octomap::KeyRay ray;
+  bool res = tree_ptr->computeRayKeys (rstart, rend, ray);
+  int size = ray.size();
+  pointer occ_fvec = makefvector(size);
+  vpush(occ_fvec);
+  Points ray_points;
+  if(depth == 0) ray_points.points.reserve(size);
+  std::vector<octomap::OcTreeNode* > node_vec;
+  int count = 0;
+  for(octomap::KeyRay::iterator it = ray.begin();
+      it != ray.end(); it++) {
+    octomap::OcTreeNode *nd = tree_ptr->search(*it, depth);
+    // depth check
+    if (depth != 0) {
+      std::vector<octomap::OcTreeNode* >::iterator fd =
+        std::find(node_vec.begin(), node_vec.end(), nd);
+      if (fd == node_vec.end()) {
+        // new node
+        node_vec.push_back(nd);
+      } else {
+        continue;
+      }
+    }
+    //
+    if (nd == NULL) {
+      //unknown
+      occ_fvec->c.fvec.fv[count] = -1.0;
+    } else {
+      // free / occupied
+      //tree_ptr->isNodeOccupied(nd);
+      //nd->getValue();
+      occ_fvec->c.fvec.fv[count] = nd->getOccupancy();
+    }
+    octomap::point3d pt;
+    if (depth == 0) {
+      pt = tree_ptr->keyToCoord(*it);
+    } else {
+      pt = tree_ptr->keyToCoord(*it, depth);
+    }
+    Point p(pt.x(), pt.y(), pt.z());
+    ray_points.points.push_back(p);
+    count++;
+  }
+
+  pointer eus_points = make_pointcloud_from_pcl (ctx, ray_points);
+  vpush(eus_points);
+
+  pointer ret = rawcons(ctx, eus_points, occ_fvec);
+  vpop(); vpop();
+  return ret;
 }
 
 pointer OCTOMAP_DUMP_DATA (register context *ctx, int n, pointer *argv) {
