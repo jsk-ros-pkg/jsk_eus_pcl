@@ -1,6 +1,64 @@
 #ifndef __EUSPCL_PCL_UTIL_H__
 #define __EUSPCL_PCL_UTIL_H__
 
+#if 0
+// RGB type conversion
+pcl::RGB pclrgb;
+pclrgb.rgb = float_rgb;
+pclrgb.rgba = uint32_rgba;
+pclrgb.r = uint8_r;
+pclrgb.r = uint8_g;
+pclrgb.r = uint8_b;
+
+inline void floatRGBTo (const float rgb, unsigned int &irgb) {
+  const unsigned int i_ = *reinterpret_cast<const unsigned int *>(&rgb);
+  irgb = i_;
+}
+
+inline void floatRGBTo (const float rgb,
+                        unsigned char &r, unsigned char &g, unsigned char &b) {
+  const unsigned int irgb = *reinterpret_cast<const unsigned int *>(&rgb);
+  r = (irgb & 0x00FF0000) >> 16;
+  g = (irgb & 0x0000FF00) >> 8;
+  b = (irgb & 0x000000FF);
+}
+
+inline void floatRGBTo (const float rgb,
+                        float &r, float &g, float &b) {
+  const unsigned int irgb = *reinterpret_cast<const unsigned int *>(&rgb);
+  r = ((irgb & 0x00FF0000) >> 16)/255.0;
+  g = ((irgb & 0x0000FF00) >> 8)/255.0;
+  b = ((irgb & 0x000000FF) >> 0)/255.0;
+}
+
+inline void toFloatRGB(const unsigned int irgb, float &rgb) {
+  const float f_ = *reinterpret_cast<const float *>(&irgb);
+  rgb = f_;
+}
+
+inline void toFloatRGB(const unsigned char r,
+                       const unsigned char g,
+                       const unsigned char b,
+                       float &rgb) {
+  unsigned int irgb;
+  irgb = b | (g << 8) | (r << 16);
+  rgb = *reinterpret_cast<float *>(&irgb);
+}
+
+inline void toFloatRGB(const float fr,
+                       const float fg,
+                       const float fb,
+                       float &rgb) {
+  unsigned char r,g,b;
+  r = (fr * 255.0);
+  g = (fg * 255.0);
+  b = (fb * 255.0);
+  unsigned int irgb;
+  irgb = b | (g << 8) | (r << 16);
+  rgb = *reinterpret_cast<float *>(&irgb);
+}
+#endif
+
 template < typename PTYPE >
 void stepPointCloud (__PCL_NS::PointCloud < PTYPE > &in_cloud,
                      __PCL_NS::PointCloud < PTYPE > &out_cloud,
