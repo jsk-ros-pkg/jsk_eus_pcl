@@ -197,27 +197,21 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt, poin
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
     for (PointsC::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
-    }
-  }
-
-  col = makematrix (ctx, len, 3);
-  vpush (col); pc++;
-  {
-    eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
-    for (PointsC::const_iterator it = pt.begin();
-         it != pt.end(); it++) {
+      // color
       const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>(&(it->rgb));
-
-      *fv++ = ((int_rgb & 0x00FF0000) >> 16) / 255.0;
-      *fv++ = ((int_rgb & 0x0000FF00) >> 8 ) / 255.0;
-      *fv++ = ((int_rgb & 0x000000FF) >> 0 ) / 255.0;
+      *fvc++ = ((int_rgb & 0x00FF0000) >> 16) / 255.0;
+      *fvc++ = ((int_rgb & 0x0000FF00) >> 8 ) / 255.0;
+      *fvc++ = ((int_rgb & 0x000000FF) >> 0 ) / 255.0;
     }
   }
 
@@ -241,31 +235,27 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt, poin
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  cuv = makefvector (len);
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    eusfloat_t *nfv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (PointsN::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
-    }
-  }
-
-  nom = makematrix (ctx, len, 3);
-  cuv = makefvector (len);
-  vpush (nom); pc++;
-  vpush (cuv); pc++;
-  {
-    eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
-    eusfloat_t *cfv = cuv->c.fvec.fv;
-    for (PointsN::const_iterator it = pt.begin();
-         it != pt.end(); it++) {
-      *fv++ = it->normal_x;
-      *fv++ = it->normal_y;
-      *fv++ = it->normal_z;
+      // normal
+      *nfv++ = it->normal_x;
+      *nfv++ = it->normal_y;
+      *nfv++ = it->normal_z;
       *cfv++ = it->curvature;
     }
   }
+
   pointer retp;
   if (pcloud == NULL) {
     retp = make_eus_pointcloud (ctx, pos, NIL, nom, cuv,
@@ -286,42 +276,31 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsCN &pt, poi
 
   pos = makematrix (ctx, len, 3);
   vpush (pos); pc++;
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  cuv = makefvector (len);
+  vpush (cuv); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
+    eusfloat_t *nfv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
     for (PointsCN::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
       *fv++ = 1000 * it->z;
-    }
-  }
-
-  col = makematrix (ctx, len, 3);
-  vpush (col); pc++;
-  {
-    eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
-    for (PointsCN::const_iterator it = pt.begin();
-         it != pt.end(); it++) {
+      // color
       const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
-
-      *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fv++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fv++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
-    }
-  }
-
-  nom = makematrix (ctx, len, 3);
-  cuv = makefvector (len);
-  vpush (nom); pc++;
-  vpush (cuv); pc++;
-  {
-    eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
-    eusfloat_t *cfv = cuv->c.fvec.fv;
-    for (PointsCN::const_iterator it = pt.begin();
-         it != pt.end(); it++) {
-      *fv++ = it->normal_x;
-      *fv++ = it->normal_y;
-      *fv++ = it->normal_z;
+      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      // normal
+      *nfv++ = it->normal_x;
+      *nfv++ = it->normal_y;
+      *nfv++ = it->normal_z;
       *cfv++ = it->curvature;
     }
   }
@@ -358,8 +337,63 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
   }
 
   nom = makematrix (ctx, len, 3);
-  cuv = makefvector (len);
   vpush (nom); pc++;
+  cuv = makefvector (len);
+  vpush (cuv); pc++;
+  {
+    eusfloat_t *nfv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
+    for (Normals::const_iterator it = nm.begin();
+         it != nm.end(); it++) {
+      *nfv++ = it->normal_x;
+      *nfv++ = it->normal_y;
+      *nfv++ = it->normal_z;
+      *cfv++ = it->curvature;
+    }
+  }
+
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  }
+
+  while (pc-- > 0) vpop();
+  return retp;
+}
+
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
+                                  const Normals &nm, pointer pcloud) {
+  int pc = 0;
+  size_t len = pt.points.size();
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
+
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
+  {
+    eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
+    for (PointsC::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
+      *fv++ = 1000 * it->x;
+      *fv++ = 1000 * it->y;
+      *fv++ = 1000 * it->z;
+      // color
+      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
+      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+    }
+  }
+
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  cuv = makefvector (len);
   vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
@@ -386,8 +420,8 @@ pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
   return retp;
 }
 
-pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
-                                  const Normals &nm, pointer pcloud) {
+pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                  const Colors &cols, pointer pcloud) {
   int pc = 0;
   size_t len = pt.points.size();
   pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
@@ -396,7 +430,7 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
   vpush (pos); pc++;
   {
     eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
-    for (PointsC::const_iterator it = pt.begin();
+    for (Points::const_iterator it = pt.begin();
          it != pt.end(); it++) {
       *fv++ = 1000 * it->x;
       *fv++ = 1000 * it->y;
@@ -407,20 +441,120 @@ pointer make_pointcloud_from_pcl (register context *ctx, const PointsC &pt,
   col = makematrix (ctx, len, 3);
   vpush (col); pc++;
   {
-    eusfloat_t *fv = col->c.ary.entity->c.fvec.fv;
-    for (PointsC::const_iterator it = pt.begin();
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
+    for (Colors::const_iterator it = cols.begin();
+         it != cols.end(); it++) {
+      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
+      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+    }
+  }
+
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  }
+
+  while (pc-- > 0) vpop();
+  return retp;
+}
+
+pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &pt,
+                                  const Colors &cols, pointer pcloud) {
+  int pc = 0;
+  size_t len = pt.points.size();
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
+
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
+  nom = makematrix (ctx, len, 3);
+  vpush (nom); pc++;
+  cuv = makefvector (len);
+  vpush (cuv); pc++;
+  {
+    eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    eusfloat_t *nfv = nom->c.ary.entity->c.fvec.fv;
+    eusfloat_t *cfv = cuv->c.fvec.fv;
+    for (PointsN::const_iterator it = pt.begin();
          it != pt.end(); it++) {
+      *fv++ = 1000 * it->x;
+      *fv++ = 1000 * it->y;
+      *fv++ = 1000 * it->z;
+      // normal
+      *nfv++ = it->normal_x;
+      *nfv++ = it->normal_y;
+      *nfv++ = it->normal_z;
+      *cfv++ = it->curvature;
+    }
+  }
+
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
+  {
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
+    for (Colors::const_iterator it = cols.begin();
+         it != cols.end(); it++) {
       const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
 
-      *fv++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
-      *fv++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
-      *fv++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
+    }
+  }
+
+  pointer retp;
+  if (pcloud == NULL) {
+    retp = make_eus_pointcloud (ctx, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  } else {
+    retp = make_eus_pointcloud (ctx, pcloud, pos, col, nom, cuv,
+                                pt.width, pt.height);
+  }
+
+  while (pc-- > 0) vpop();
+  return retp;
+}
+
+pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
+                                  const Colors &cols, const Normals &nm, pointer pcloud) {
+  int pc = 0;
+  size_t len = pt.points.size();
+  pointer pos = NIL, col = NIL, nom = NIL, cuv = NIL;
+
+  pos = makematrix (ctx, len, 3);
+  vpush (pos); pc++;
+  {
+    eusfloat_t *fv = pos->c.ary.entity->c.fvec.fv;
+    for (Points::const_iterator it = pt.begin();
+         it != pt.end(); it++) {
+      *fv++ = 1000 * it->x;
+      *fv++ = 1000 * it->y;
+      *fv++ = 1000 * it->z;
+    }
+  }
+
+  col = makematrix (ctx, len, 3);
+  vpush (col); pc++;
+  {
+    eusfloat_t *fvc = col->c.ary.entity->c.fvec.fv;
+    for (Colors::const_iterator it = cols.begin();
+         it != cols.end(); it++) {
+      const unsigned int int_rgb = *reinterpret_cast<const unsigned int *>( &(it->rgb) );
+
+      *fvc++ = (( int_rgb & 0x00FF0000 ) >> 16) / 255.0;
+      *fvc++ = (( int_rgb & 0x0000FF00 ) >> 8 ) / 255.0;
+      *fvc++ = (( int_rgb & 0x000000FF ) >> 0 ) / 255.0;
     }
   }
 
   nom = makematrix (ctx, len, 3);
-  cuv = makefvector (len);
   vpush (nom); pc++;
+  cuv = makefvector (len);
   vpush (cuv); pc++;
   {
     eusfloat_t *fv = nom->c.ary.entity->c.fvec.fv;
