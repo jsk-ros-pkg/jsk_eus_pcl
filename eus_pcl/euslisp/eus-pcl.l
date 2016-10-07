@@ -145,26 +145,23 @@
   (:clamping-threshold
    (&key (clamping-min) (clamping-max))
    (pcl::octomap-clamping-threshold ptr clamping-min clamping-max))
-  (:metric-info () (pcl::octomap-metrix-info ptr))
+  (:metric-info () (pcl::octomap-metric-info ptr))
   (:occupancy-threshold (&optional thre) (pcl::octomap-occupancy-threshold ptr thre))
   (:probability (&key (hit) (miss)) (pcl::octomap-probability ptr hit miss))
   (:get-tree-info () (pcl::octomap-get-tree-info ptr))
   (:use-bounding-box-limit (&optional (enable t)) (pcl::octomap-use-bbx-limit ptr enable))
-  (:number-of-nodes () (when ptr (pcl::octomap-node-num ptr)))
+  (:number-of-nodes () (pcl::octomap-node-num ptr))
   (:add-points
    (point-cloud &key (origin (float-vector 0 0 0)))
-   (when ptr
-     (pcl::octomap-add-points ptr point-cloud origin)))
+   (pcl::octomap-add-points ptr point-cloud origin))
   (:read-nodes
    (&key (depth 0) (return-free nil) (return-both) (with-color))
-   (when ptr
-     (pcl::octomap-read-nodes ptr depth return-free return-both with-color)))
+   (pcl::octomap-read-nodes ptr depth return-free return-both with-color))
   ;; (:points-check
   ;; (:detect-change
   (:read-unknown
    (&key (depth 0) (max-bounding-box) (min-bounding-box))
-   (when ptr
-     (pcl::octomap-read-unknown ptr depth)))
+   (pcl::octomap-read-unknown ptr depth))
   (:search-ray
    (ray-origin ray-ends &key (depth 0))
    (pcl::octomap-search-ray ptr ray-origin ray-ends depth))

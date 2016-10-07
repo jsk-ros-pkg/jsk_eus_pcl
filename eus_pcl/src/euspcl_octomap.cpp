@@ -24,7 +24,7 @@ pointer OCTOMAP_CREATE (register context *ctx, int n, pointer *argv) {
     std::stringstream datastream;
     long len = strlength(argv[1]);
     datastream.write((const char *)(argv[1]->c.str.chars), len);
-    if (n > 2 && ( argv[2] != NIL )) {
+    if (n > 2 && (argv[2] != NIL)) {
       // use full data
       tree_ptr->readBinaryData(datastream);
     } else {
@@ -59,15 +59,11 @@ pointer OCTOMAP_RESOLUTION (register context *ctx, int n, pointer *argv) {
 
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
-  if (n > 1) {
-    if (argv[0] != NIL) {
-      double r = ckfltval(argv[0]) * 0.001;
-      tree_ptr->setResolution( r );
-    }
+  if (n > 1 && (argv[1] != NIL)) {
+    double r = ckfltval(argv[1]) * 0.001;
+    tree_ptr->setResolution( r );
   }
-
-  eusfloat_t resolution;
-  resolution = tree_ptr->getResolution() * 1000.0;
+  eusfloat_t resolution = tree_ptr->getResolution() * 1000.0;
 
   return makeflt(resolution);
 }
@@ -85,23 +81,25 @@ pointer OCTOMAP_BOUNDING_BOX (register context *ctx, int n, pointer *argv) {
   pmin = tree_ptr->getBBXMin();
   pmax = tree_ptr->getBBXMax();
 
-  if (n > 1) {
-    if (isfltvector(argv[1])) {
-      pointer min_vec = argv[1];
-      pmin.x() = min_vec->c.fvec.fv[0] * 0.001;
-      pmin.y() = min_vec->c.fvec.fv[1] * 0.001;
-      pmin.z() = min_vec->c.fvec.fv[2] * 0.001;
-      set_value = true;
+  if (n > 1 && (argv[1] != NIL)) {
+    if (!isfltvector(argv[1])) {
+      error(E_TYPEMISMATCH);
     }
+    pointer min_vec = argv[1];
+    pmin.x() = min_vec->c.fvec.fv[0] * 0.001;
+    pmin.y() = min_vec->c.fvec.fv[1] * 0.001;
+    pmin.z() = min_vec->c.fvec.fv[2] * 0.001;
+    set_value = true;
   }
-  if (n > 2) {
-    if (isfltvector(argv[2])) {
-      pointer max_vec = argv[2];
-      pmax.x() = max_vec->c.fvec.fv[0] * 0.001;
-      pmax.y() = max_vec->c.fvec.fv[1] * 0.001;
-      pmax.z() = max_vec->c.fvec.fv[2] * 0.001;
-      set_value = true;
+  if (n > 2 && (argv[2] != NIL)) {
+    if (!isfltvector(argv[2])) {
+      error(E_TYPEMISMATCH);
     }
+    pointer max_vec = argv[2];
+    pmax.x() = max_vec->c.fvec.fv[0] * 0.001;
+    pmax.y() = max_vec->c.fvec.fv[1] * 0.001;
+    pmax.z() = max_vec->c.fvec.fv[2] * 0.001;
+    set_value = true;
   }
 
   if (set_value) {
@@ -167,11 +165,11 @@ pointer OCTOMAP_CLAMPING_THRESHOLD (register context *ctx, int n, pointer *argv)
   double min_threshold = 0.1192; /* check default */
   double max_threshold = 0.971; /* check default */
 
-  if (n > 1) {
+  if (n > 1 && (argv[1] != NIL)) {
     min_threshold = ckfltval(argv[1]);
     tree_ptr->setClampingThresMin(min_threshold);
   }
-  if (n > 2) {
+  if (n > 2 && (argv[2] != NIL)) {
     max_threshold = ckfltval(argv[2]);
     tree_ptr->setClampingThresMax(max_threshold);
   }
@@ -375,17 +373,17 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
   }
 
   bool return_free = true;
-  if (n > 2 && argv[2] == NIL) {
+  if (n > 2 && (argv[2] == NIL)) {
     return_free = false;
   }
 
   bool return_both = false;
-  if (n > 3 && argv[3] != NIL) {
+  if (n > 3 && (argv[3] != NIL)) {
     return_both = true;
   }
 
   bool with_color = false;
-  if (n > 4 && argv[4] != NIL) {
+  if (n > 4 && (argv[4] != NIL)) {
     with_color = true;
   }
 
@@ -497,13 +495,19 @@ pointer OCTOMAP_READ_UNKNOWN (register context *ctx, int n, pointer *argv) {
   pmax = tree_ptr->getBBXMax();
   pmin = tree_ptr->getBBXMin();
 
-  if (n > 2 && isfltvector(argv[2])) {
+  if (n > 2 && (argv[2] != NIL)) {
+    if(!isfltvector(argv[2])) {
+      error(E_TYPEMISMATCH);
+    }
     pointer min_vec = argv[2];
     pmin.x() = min_vec->c.fvec.fv[0] * 0.001;
     pmin.y() = min_vec->c.fvec.fv[1] * 0.001;
     pmin.z() = min_vec->c.fvec.fv[2] * 0.001;
   }
-  if (n > 3 && isfltvector(argv[3])) {
+  if (n > 3 && (argv[3] != NIL)) {
+    if(!isfltvector(argv[3])) {
+      error(E_TYPEMISMATCH);
+    }
     pointer max_vec = argv[3];
     pmax.x() = max_vec->c.fvec.fv[0] * 0.001;
     pmax.y() = max_vec->c.fvec.fv[1] * 0.001;
@@ -554,7 +558,7 @@ pointer OCTOMAP_ADD_POINTS (register context *ctx, int n, pointer *argv) {
   pointer pcloud;
   octomap::OcTree *tree_ptr;
 
-  ckarg(3);
+  ckarg2(2, 3);
 
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
@@ -569,10 +573,16 @@ pointer OCTOMAP_ADD_POINTS (register context *ctx, int n, pointer *argv) {
   PointCloud< Point >::Ptr pcl_cloud =
     make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
 
-  pointer e_origin = argv[2];
-  octomap::point3d origin(e_origin->c.fvec.fv[0] * 0.001,
-                          e_origin->c.fvec.fv[1] * 0.001,
-                          e_origin->c.fvec.fv[2] * 0.001);
+  octomap::point3d origin;
+  if (n > 2 && (argv[2] != NIL)) {
+    if(!isfltvector(argv[2])) {
+      error(E_TYPEMISMATCH);
+    }
+    pointer e_origin = argv[2];
+    origin.x() = e_origin->c.fvec.fv[0] * 0.001;
+    origin.y() = e_origin->c.fvec.fv[1] * 0.001;
+    origin.z() = e_origin->c.fvec.fv[2] * 0.001;
+  }
 
   octomap::Pointcloud pt;
   for (PointCloud< Point >::const_iterator it = pcl_cloud->begin(); it != pcl_cloud->end(); ++it) {
@@ -596,18 +606,22 @@ pointer OCTOMAP_SEARCH_RAY (register context *ctx, int n, pointer *argv) {
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
   octomap::point3d rstart, rend;
 
-  if (n > 1 && isfltvector(argv[1])) {
-    pointer s_vec = argv[1];
-    rstart.x() = s_vec->c.fvec.fv[0] * 0.001;
-    rstart.y() = s_vec->c.fvec.fv[1] * 0.001;
-    rstart.z() = s_vec->c.fvec.fv[2] * 0.001;
+  if (!isfltvector(argv[1])) {
+    error(E_TYPEMISMATCH);
   }
-  if (n > 2 && isfltvector(argv[2])) {
-    pointer e_vec = argv[2];
-    rend.x() = e_vec->c.fvec.fv[0] * 0.001;
-    rend.y() = e_vec->c.fvec.fv[1] * 0.001;
-    rend.z() = e_vec->c.fvec.fv[2] * 0.001;
+  pointer s_vec = argv[1];
+  rstart.x() = s_vec->c.fvec.fv[0] * 0.001;
+  rstart.y() = s_vec->c.fvec.fv[1] * 0.001;
+  rstart.z() = s_vec->c.fvec.fv[2] * 0.001;
+
+  if (!isfltvector(argv[2])) {
+    error(E_TYPEMISMATCH);
   }
+  pointer e_vec = argv[2];
+  rend.x() = e_vec->c.fvec.fv[0] * 0.001;
+  rend.y() = e_vec->c.fvec.fv[1] * 0.001;
+  rend.z() = e_vec->c.fvec.fv[2] * 0.001;
+
   int depth = 0;
   if (n > 3) {
     depth = ckintval(argv[3]);
