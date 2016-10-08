@@ -122,6 +122,7 @@ extern pointer make_pointcloud_from_pcl (register context *ctx, const PointsN &p
 extern pointer make_pointcloud_from_pcl (register context *ctx, const Points &pt,
                                          const Colors &cols, const Normals &nm, pointer pcloud = NULL);
 
+// TODO: fvector2pcl_pointcloud could be normal functions
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           eusfloat_t *cvt, int width, int height, Points &pt) {
   pt.width    = width;
@@ -203,6 +204,7 @@ static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusf
     }
   }
 }
+
 static inline void fvector2pcl_pointcloud(eusfloat_t *src, eusfloat_t *rgb, eusfloat_t *nm,
                                           eusfloat_t *cvt, int width, int height, PointsCN &pt) {
   pt.width    = width;
@@ -324,7 +326,8 @@ inline bool isPointCloud (pointer p) {
     return false;
 }
 
-inline pointer convert_eigenmatrix_to_coordinates (register context *ctx, Eigen::Matrix4f &tma) {
+template <class T> // T should be Eigen::Matrix4f or Eigen::Matrix4d
+inline pointer convert_eigenmatrix_to_coordinates (register context *ctx, const T &tma) {
   pointer pos, rot;
   int pc = 0;
   pos = makefvector (3);
@@ -348,11 +351,10 @@ inline pointer convert_eigenmatrix_to_coordinates (register context *ctx, Eigen:
   return ret;
 }
 
-inline Eigen::Matrix4f convert_coordinates_to_eigenmatrix (register context *ctx, pointer coords) {
+template <class T> // T should be Eigen::Matrix4f or Eigen::Matrix4d
+inline void convert_coordinates_to_eigenmatrix (register context *ctx, pointer coords, T &tma) {
   pointer pos = get_from_pointcloud(ctx, coords, K_EUSPCL_POS);
   pointer rot = get_from_pointcloud(ctx, coords, K_EUSPCL_ROT);
-
-  Eigen::Matrix4f tma;
 
   tma (0, 3) = pos->c.fvec.fv[0] * 0.001;
   tma (1, 3) = pos->c.fvec.fv[1] * 0.001;
@@ -366,8 +368,52 @@ inline Eigen::Matrix4f convert_coordinates_to_eigenmatrix (register context *ctx
   }
 
   tma(3, 0) = 0.0; tma(3, 1) = 0.0; tma(3, 2) = 0.0; tma(3, 3) = 1.0;
+}
 
-  return tma;
+template <class T>
+inline pointer make_eus_float_vector(std::vector< T > &vec, double scale = 1.0) {
+  pointer ret;
+  ret = makefvector (vec.size());
+  for(int i = 0; i < vec.size(); i++) {
+    ret->c.fvec.fv[i] = vec[i] * scale;
+  }
+  return ret;
+}
+
+template <class T>
+inline pointer make_eus_int_vector(std::vector< T > &vec) {
+  pointer ret;
+  ret = makevector (C_INTVECTOR, vec.size());
+  for(int i = 0; i < vec.size(); i++) {
+    ret->c.ivec.iv[i] = vec[i]; // should cast??
+  }
+  return ret;
+}
+
+inline __PCL_NS::IndicesPtr make_pcl_indices_ptr(pointer ivector) {
+  // no check for ivector;;;
+  __PCL_NS::IndicesPtr ret(new __PCL_NS::Indices());
+  size_t vsize = vecsize(ivector);
+  ret->resize(vsize);
+  for(size_t i = 0; i < vsize; i++) {
+    (*ret)[i] = ivector->c.ivec.iv[i];
+  }
+  return ret;
+}
+
+inline __PCL_NS::IndicesPtr make_pcl_indices_ptr_list(pointer icons) {
+  // no check for ivector;;;
+  __PCL_NS::IndicesPtr ret(new __PCL_NS::Indices());
+  pointer tmp = icons;
+  //ret->resize(0);
+  while (tmp != NIL) {
+    pointer i = ccar(tmp);
+    if (isint (i)) {
+      ret->push_back (intval(i));
+    }
+    tmp = ccdr(tmp);
+  }
+  return ret;
 }
 
 #include "euspcl_pcl_utils.h"
