@@ -33,7 +33,7 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   if (n > 3) {
     if (argv[3] != NIL) {
       use_guess = true;
-      guess_mat = convert_coordinates_to_eigenmatrix(ctx, argv[3]);
+      convert_coordinates_to_eigenmatrix <Eigen::Matrix4f > (ctx, argv[3], guess_mat);
     }
   }
   // extra arguments
@@ -155,7 +155,7 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
   }
 
   Eigen::Matrix4f emat (icp->getFinalTransformation ());
-  ret = convert_eigenmatrix_to_coordinates (ctx, emat);
+  ret = convert_eigenmatrix_to_coordinates <Eigen::Matrix4f > (ctx, emat);
 
   { // add fitness score to coordinates
     pointer lst;
