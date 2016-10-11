@@ -293,6 +293,87 @@ pointer OCTOMAP_PROBABILITY (register context *ctx, int n, pointer *argv) {
   return ret;
 }
 
+#define define_no_arg_method(name,code)                                 \
+  pointer OCTOMAP_##name (register context *ctx, int n, pointer *argv) { \
+    numunion nu;                                                        \
+    octomap::OcTree *tree_ptr;                                          \
+    pointer ret = NIL;                                                  \
+    ckarg(1);                                                           \
+    tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));                  \
+    code;                                                               \
+    return ret;                                                         \
+    }                                                                   \
+
+define_no_arg_method(BBX_SET,{
+    bool r = tree_ptr->bbxSet();
+    if (r) ret = T;
+  })
+define_no_arg_method(CLEAR,{
+    tree_ptr->clear();
+  })
+define_no_arg_method(CLEAR_KEY_RAYS,{
+    // later than version 1.8
+    // tree_ptr->clearKeyRays();
+  })
+define_no_arg_method(EXPAND,{
+    tree_ptr->expand();
+  })
+define_no_arg_method(PRUNE,{
+    tree_ptr->prune();
+  })
+define_no_arg_method(TO_MAX_LIKELIHOOD,{
+    tree_ptr->toMaxLikelihood();
+  })
+define_no_arg_method(UPDATE_INNER_OCCUPANCY,{
+    tree_ptr->updateInnerOccupancy();
+  })
+define_no_arg_method(GET_TREE_DEPTH,{
+    eusinteger_t dp = tree_ptr->getTreeDepth();
+    ret = makeint(dp);
+  })
+
+#if 0
+//  bool bbxSet ();
+  size_t calcNumNodes ();
+
+//  void clear ();
+//  void clearKeyRays ();
+
+//  virtual void expand ();
+  point3d getBBXBounds ();
+  point3d getBBXCenter ();
+  point3d getBBXMax ();
+  point3d getBBXMin ();
+  double getClampingThresMax ();
+  float getClampingThresMaxLog ();
+  double getClampingThresMin ();
+  float getClampingThresMinLog ();
+  size_t getNumLeafNodes ();
+  double getOccupancyThres ();
+  float getOccupancyThresLog ();
+  double getProbHit ();
+  float getProbHitLog ();
+  double getProbMiss ();
+  float getProbMissLog ();
+  double getResolution ();
+  OcTreeNode * getRoot ();
+//  unsigned int getTreeDepth ();
+  std::string getTreeType ();
+  bool isChangeDetectionEnabled ();
+
+  unsigned long long memoryFullGrid ();
+  virtual size_t memoryUsage ();
+  virtual size_t memoryUsageNode ();
+  size_t numChangesDetected ();
+//  virtual void prune ();
+  void resetChangeDetection ();
+
+  virtual size_t size ();
+//  void toMaxLikelihood();
+//  void updateInnerOccupancy ();
+  double volume ();
+#endif
+
 pointer OCTOMAP_GET_TREE_INFO (register context *ctx, int n, pointer *argv) {
   /* octomap_pointer -> (depth . type-string) */
   numunion nu;
@@ -349,22 +430,22 @@ pointer OCTOMAP_NODE_NUM (register context *ctx, int n, pointer *argv) {
 
 #define setColorRing(col,val)                   \
   {                                             \
-    pcl::PointXYZHSV in;                        \
-    pcl::PointXYZRGB out;                       \
-    in.h = 240 * val;                           \
+    PointXYZHSV in;                             \
+    PointXYZRGB out;                            \
+    in.h = 270 * (1.0 - val);                   \
     in.s = 1.0;                                 \
     in.v = 1.0;                                 \
-    pcl::PointXYZHSVtoXYZRGB(in, out);          \
+    PointXYZHSVtoXYZRGB(in, out);               \
     col.rgb = out.rgb;                          \
   }
 
 pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
-  /* octree_pointer (depth) (return_free) (return_both) (with_color)
+  /* octree_pointer (depth) (return_free) (return_both) (with_color) (multi-resolution)
      -> (occupied_points free_points) */
   numunion nu;
   octomap::OcTree *tree_ptr;
 
-  ckarg2(1, 5);
+  ckarg2(1, 6);
   tree_ptr = (octomap::OcTree *)(ckintval(argv[0]));
 
   int depth = 0;
@@ -387,14 +468,25 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
     with_color = true;
   }
 
+  bool multi_resolution = false;
+  if (n > 5 && (argv[5] != NIL)) {
+    multi_resolution = true;
+  }
+
   Points occ_points;
   Colors occ_cols;
   Points free_points;
   Colors free_cols;
-
+  IndicesPtr occ_idx;
+  IndicesPtr free_idx;
   // TODO: if not expanding tree, we will get nodes with several depth valus.
   //       it causes that we should draw different size of cubes for visualizing.
-  tree_ptr->expand();
+  if (multi_resolution) {
+    occ_idx.reset(new Indices());
+    free_idx.reset(new Indices());
+  } else {
+    tree_ptr->expand();
+  }
   for (octomap::OcTree::leaf_iterator it = tree_ptr->begin_leafs(depth),
                                       end = tree_ptr->end_leafs();
        it != end; ++it) {
@@ -412,6 +504,9 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
       octomap::point3d pt = it.getCoordinate();
       Point p(pt.x(), pt.y(), pt.z());
       occ_points.push_back(p);
+      if (multi_resolution) {
+        occ_idx->push_back(it.getDepth());
+      }
       if (return_both) {
         float occup = it->getOccupancy();
         if (with_color) {
@@ -437,6 +532,9 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
         octomap::point3d pt = it.getCoordinate();
         Point p(pt.x(), pt.y(), pt.z());
         free_points.push_back(p);
+        if (multi_resolution) {
+          free_idx->push_back(it.getDepth());
+        }
         if (with_color) {
           float occup = it->getOccupancy();
           PColor col;
@@ -456,6 +554,12 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
       ret_free = make_pointcloud_from_pcl (ctx, free_points);
     }
     vpush(ret_free);
+    if (multi_resolution) {
+      pointer ivec = make_eus_int_vector(*free_idx);
+      vpush(ivec);
+      set_property(ctx, ret_free, ivec, K_EUSPCL_RESULT);
+      vpop();
+    }
     ret = rawcons (ctx, ret_free, ret);
     vpop(); vpush(ret);
     pointer ret_occ;
@@ -465,6 +569,12 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
       ret_occ = make_pointcloud_from_pcl (ctx, occ_points);
     }
     vpush(ret_occ);
+    if (multi_resolution) {
+      pointer ivec = make_eus_int_vector(*occ_idx);
+      vpush(ivec);
+      set_property(ctx, ret_occ, ivec, K_EUSPCL_RESULT);
+      vpop();
+    }
     ret = rawcons (ctx, ret_occ, ret);
     vpop(); vpop();
   } else {
@@ -472,6 +582,13 @@ pointer OCTOMAP_READ_NODES (register context *ctx, int n, pointer *argv) {
       ret = make_pointcloud_from_pcl (ctx, occ_points, occ_cols);
     } else {
       ret = make_pointcloud_from_pcl (ctx, occ_points);
+    }
+    if (multi_resolution) {
+      vpush(ret);
+      pointer ivec = make_eus_int_vector(*occ_idx);
+      vpush(ivec);
+      set_property(ctx, ret, ivec, K_EUSPCL_RESULT);
+      vpop(); vpop();
     }
   }
 
