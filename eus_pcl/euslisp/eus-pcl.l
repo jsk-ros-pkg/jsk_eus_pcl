@@ -116,8 +116,14 @@
 ;;; euspcl_octomap
 ;;;
 (defclass octomap
-  :super propertied-object
-  :slots (ptr resolution type)
+  :super user::pointcloud
+  :slots (ptr
+          resolution
+          type
+          depth-vec
+          max-depth
+          disp-id-vec
+          disp-id)
   )
 (defmethod octomap
   (:init (&key ((:resolution r) 50) (type)
@@ -125,6 +131,7 @@
    (setq resolution r)
    (setq ptr (pcl::octomap-create resolution))
    (sys::dispose-hook self t)
+   (send-super :init)
    self)
   (:init-from-msg (msg) ;; msg is octomap_msgs/Octomap
    ;; check message type (send msg :id)
@@ -136,6 +143,14 @@
                 (send msg :binary)))
      (if ptr self)
      ))
+  ;;
+  (:get-tree-depth () (pcl::octomap-get-tree-depth ptr))
+  (:clear () (pcl::octomap-clear ptr))
+  (:expand () (pcl::octomap-expand ptr))
+  (:prune () (pcl::octomap-prune ptr))
+  (:to-max-likelihood () (pcl::octomap-to-max-likelihood ptr))
+  (:update-inner-occupancy () (pcl::octomap-update-inner-occupancy ptr))
+  ;;
   (:dump (&optional binary) (pcl::octomap-dump-data ptr binary))
   (:resolution (&optional r) (pcl::octomap-resolution ptr r))
   (:bounding-box
@@ -155,8 +170,20 @@
    (point-cloud &key (origin (float-vector 0 0 0)))
    (pcl::octomap-add-points ptr point-cloud origin))
   (:read-nodes
-   (&key (depth 0) (return-free nil) (return-both) (with-color))
-   (pcl::octomap-read-nodes ptr depth return-free return-both with-color))
+   (&key (depth 0) (return-free nil) (return-both) (with-color) (multi-resolution))
+   (pcl::octomap-read-nodes ptr depth return-free return-both with-color multi-resolution))
+  (:update-visual
+   (&key (return-both) ((:transparent tp) 0.7))
+   (let* ((pt (send self :read-nodes :return-both return-both :with-color t :multi-resolution t))
+          (max-depth_ (send self :get-tree-depth))
+          (depth-vec_ (send pt :get :result)))
+     (replace-object self pt)
+     (setq max-depth max-depth_
+           depth-vec depth-vec_
+           user::transparent tp)
+     (setq disp-id-vec (instantiate vector (+ max-depth 1)))
+     self
+     ))
   ;; (:points-check
   ;; (:detect-change
   (:read-unknown
@@ -169,6 +196,74 @@
    (when ptr
      (pcl::octomap-delete ptr)
      (setq ptr nil)))
+  (:transparent (&optional tr) (when tr (setq user::transparent tr)) user::transparent)
+  (:draw
+   (vwer)
+   ;; (send-super :draw vwer) ;; point representation
+   (send self :draw-raw vwer))
+  (:draw-raw (vwer) ;; overwrite
+   ;;
+   (gl::glPushAttrib gl::GL_ALL_ATTRIB_BITS)
+   (if vwer (send vwer :viewsurface :makecurrent))
+   ;;(gl::glDisable gl::GL_LIGHTING)
+   ;;
+   (when user::transparent
+     (gl::glDepthMask gl::GL_FALSE)
+     (gl::glEnable gl::GL_BLEND)
+     (gl::glBlendFunc gl::GL_SRC_ALPHA gl::GL_ONE_MINUS_SRC_ALPHA))
+
+   (gl::glpushmatrix)
+   (gl::glmultmatrixf (array-entity (transpose (send user::worldcoords :4x4) gl::*temp-matrix*)))
+
+   (let ((pos (float-vector 0 0 0))
+         (col (float-vector 0 0 0))
+         (pmat (send self :points))
+         (cmat (send self :colors))
+         (len (send self :size))
+         depth)
+     (gl::glpushmatrix)
+     (dotimes (i len)
+       (user::c-matrix-row pmat i pos)
+       (setq depth (elt depth-vec i))
+       ;; color
+       (when cmat
+         (user::c-matrix-row cmat i col)
+         (gl::glColor3fv col)
+         (cond
+          (user::transparent
+           (gl::glMaterialfv gl::GL_FRONT  gl::GL_AMBIENT_AND_DIFFUSE
+                             (concatenate float-vector col (float-vector user::transparent)))
+           (gl::glMaterialfv gl::GL_BACK gl::GL_AMBIENT_AND_DIFFUSE (float-vector 0 0 0 0)))
+          (t
+           (gl::glMaterialfv gl::GL_FRONT gl::GL_AMBIENT_AND_DIFFUSE col)
+           (gl::glMaterialfv gl::GL_BACK  gl::GL_AMBIENT_AND_DIFFUSE col))
+          ))
+       (gl::glpushmatrix)
+       (gl::gltranslatefv pos)
+       (cond
+        ((elt disp-id-vec depth)
+         (gl::glcalllist (elt disp-id-vec depth)))
+        (t
+         (let* ((disp-id (gl::glgenlists 1))
+                (cb-size (* resolution (expt 2 (- max-depth depth))))
+                (cb (geo::make-cube cb-size cb-size cb-size)))
+           (gl::glnewlist disp-id gl::gl_compile)
+           (mapc #'(lambda (aface) (gl::draw-face aface nil nil)) (send cb :faces))
+           (gl::glendlist)
+           (setf (elt disp-id-vec depth) disp-id))
+         ))
+       (gl::glpopmatrix)
+       )
+     (gl::glpopmatrix)
+     )
+   (gl::glpopmatrix)
+
+   ;;(gl::glEnable gl::GL_LIGHTING)
+   (when user::transparent
+     (gl::glDepthMask gl::GL_TRUE)
+     (gl::glDisable gl::GL_BLEND))
+   (gl::glPopAttrib)
+   )
   )
 
 ;;;

@@ -20,4 +20,14 @@ extern pointer OCTOMAP_GET_TREE_INFO (register context *ctx, int n, pointer *arg
 extern pointer OCTOMAP_USE_BBX_LIMIT (register context *ctx, int n, pointer *argv);
 extern pointer OCTOMAP_SEARCH_RAY (register context *ctx, int n, pointer *argv);
 
+// no arg methods
+extern pointer OCTOMAP_BBX_SET (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_CLEAR (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_CLEAR_KEY_RAYS (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_EXPAND (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_PRUNE (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_TO_MAX_LIKELIHOOD (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_UPDATE_INNER_OCCUPANCY (register context *ctx, int n, pointer *argv);
+extern pointer OCTOMAP_GET_TREE_DEPTH (register context *ctx, int n, pointer *argv);
+
 #endif

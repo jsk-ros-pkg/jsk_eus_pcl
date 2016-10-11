@@ -681,7 +681,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"OCTOMAP-DUMP-DATA", argv[0], (pointer (*)())OCTOMAP_DUMP_DATA);
   defun (ctx, (char *)"OCTOMAP-RESOLUTION", argv[0], (pointer (*)())OCTOMAP_RESOLUTION);
   defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX);
-
+  //
   defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX-INFO", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX_INFO);
   defun (ctx, (char *)"OCTOMAP-CLAMPING-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_CLAMPING_THRESHOLD);
   defun (ctx, (char *)"OCTOMAP-METRIC-INFO", argv[0], (pointer (*)())OCTOMAP_METRIC_INFO);
@@ -690,6 +690,15 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   defun (ctx, (char *)"OCTOMAP-GET-TREE-INFO", argv[0], (pointer (*)())OCTOMAP_GET_TREE_INFO);
   defun (ctx, (char *)"OCTOMAP-USE-BBX-LIMIT", argv[0], (pointer (*)())OCTOMAP_USE_BBX_LIMIT);
   defun (ctx, (char *)"OCTOMAP-SEARCH-RAY", argv[0], (pointer (*)())OCTOMAP_SEARCH_RAY);
+  // no arg methods
+  defun (ctx, (char *)"OCTOMAP-BBX_SET", argv[0], (pointer (*)())OCTOMAP_BBX_SET);
+  defun (ctx, (char *)"OCTOMAP-CLEAR", argv[0], (pointer (*)())OCTOMAP_CLEAR);
+  defun (ctx, (char *)"OCTOMAP-CLEAR-KEY-RAYS", argv[0], (pointer (*)())OCTOMAP_CLEAR_KEY_RAYS);
+  defun (ctx, (char *)"OCTOMAP-EXPAND", argv[0], (pointer (*)())OCTOMAP_EXPAND);
+  defun (ctx, (char *)"OCTOMAP-PRUNE", argv[0], (pointer (*)())OCTOMAP_PRUNE);
+  defun (ctx, (char *)"OCTOMAP-TO-MAX-LIKELIHOOD", argv[0], (pointer (*)())OCTOMAP_TO_MAX_LIKELIHOOD);
+  defun (ctx, (char *)"OCTOMAP-UPDATE-INNER-OCCUPANCY", argv[0], (pointer (*)())OCTOMAP_UPDATE_INNER_OCCUPANCY);
+  defun (ctx, (char *)"OCTOMAP-GET-TREE-DEPTH", argv[0], (pointer (*)())OCTOMAP_GET_TREE_DEPTH);
 
   // euspcl_kdtree.cpp
   defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH);
