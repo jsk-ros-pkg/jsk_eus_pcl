@@ -53,6 +53,25 @@
 (defun read-pcd (fname)
   (pcl::read-pcd fname))
 
+(defun write-pcd-list (plist &optional (fmt "point~3,3D.pcd"))
+  (let ((cnt 0))
+    (dolist (p plist)
+      (let ((fname (format nil fmt cnt)))
+        (eus_pcl::write-pcd fname p))
+      (incf cnt)
+      )))
+
+(defun read-pcd-list (&optional (fmt "point~3,3D.pcd") (size 1000))
+  (let (ret)
+    (dotimes (i size)
+      (let ((fname (format nil fmt i)))
+        (when (probe-file fname)
+          (push (eus_pcl::read-pcd fname) ret)
+          (send (car ret) :put :filename fname)
+          )
+        ))
+    (nreverse ret)))
+
 ;;;
 ;;; euspcl_filters
 ;;;
