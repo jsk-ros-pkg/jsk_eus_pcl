@@ -176,13 +176,13 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
     sac_max_iter = intval(argv[3]);
   }
   if (n > 4) {
-    sac_radius_min = fltval(argv[4]) / 1000.0;
+    sac_radius_min = ckfltval(argv[4]) / 1000.0;
   }
   if (n > 5) {
-    sac_radius_max = fltval(argv[5]) / 1000.0;
+    sac_radius_max = ckfltval(argv[5]) / 1000.0;
   }
   if (n > 6) {
-    sac_distance_thre = fltval(argv[6]) / 1000.0;
+    sac_distance_thre = ckfltval(argv[6]) / 1000.0;
   }
   if (n > 7) {
     if (argv[7] == NIL) {
