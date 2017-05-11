@@ -644,6 +644,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_filters.cpp
   defun (ctx, (char *)"DOWNSAMPLE", argv[0], (pointer (*)())PCL_VOXEL_GRID);
   defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES);
+  defun (ctx, (char *)"CROP-BOX", argv[0], (pointer (*)())PCL_CROP_BOX);
 
   // euspcl_features.cpp
   defun (ctx, (char *)"ADD-NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);

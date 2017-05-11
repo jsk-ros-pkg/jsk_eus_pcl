@@ -163,3 +163,91 @@ pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
   while (pc-- > 0) vpop();
   return ret;
 }
+
+#define CROP_BOX_(PTYPE)                                                \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
+  PointCloud< PTYPE > pcl_cloud_filtered;                               \
+  CropBox< PTYPE > crop_box;                                            \
+  crop_box.setInputCloud (pcl_cloud);                                   \
+  crop_box.setNegative (pcl_negative);                                  \
+  crop_box.setMin (minp);                                               \
+  crop_box.setMax (maxp);                                               \
+  crop_box.filter (pcl_cloud_filtered);                                 \
+  if (create_cloud) {                                                   \
+    ret = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered);           \
+    vpush(ret); pc++;                                                   \
+  } else {                                                              \
+    ret = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered, in_cloud); \
+  }
+
+pointer PCL_CROP_BOX (register context *ctx, int n, pointer *argv) {
+  /* pointcloud minpoint maxpoint &optional (negative nil) (create t) */
+  pointer in_cloud;
+  pointer points, colors, normals, curvatures;
+  pointer ret = NIL;
+  Eigen::Vector4f minp;
+  Eigen::Vector4f maxp;
+  bool pcl_negative = false;
+  bool create_cloud = true;
+  numunion nu;
+  int pc = 0;
+
+  ckarg2 (3, 5);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return ret;
+  }
+  in_cloud = argv[0];
+
+  if (!isfltvector(argv[1])) {
+    error(E_TYPEMISMATCH);
+  } else {
+    pointer min_vec = argv[1];
+    minp.x() = min_vec->c.fvec.fv[0] * 0.001;
+    minp.y() = min_vec->c.fvec.fv[1] * 0.001;
+    minp.z() = min_vec->c.fvec.fv[2] * 0.001;
+  }
+
+  if (!isfltvector(argv[2])) {
+    error(E_TYPEMISMATCH);
+  } else {
+    pointer max_vec = argv[2];
+    maxp.x() = max_vec->c.fvec.fv[0] * 0.001;
+    maxp.y() = max_vec->c.fvec.fv[1] * 0.001;
+    maxp.z() = max_vec->c.fvec.fv[2] * 0.001;
+  }
+
+  if (n > 3) {
+    if (argv[3] != NIL) {
+      pcl_negative = true;
+    }
+  }
+  if (n > 4) {
+    if (argv[4] == NIL) {
+      create_cloud = false;
+    }
+  }
+
+  int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
+  normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
+
+  if (points != NIL && colors != NIL && normals != NIL) {
+    CROP_BOX_(PointCN);
+  } else if (points != NIL && colors != NIL) {
+    CROP_BOX_(PointC);
+  } else if (points != NIL && normals != NIL) {
+    CROP_BOX_(PointN);
+  } else if (points != NIL) {
+    CROP_BOX_(Point);
+  } else {
+    // warning there is no points.
+  }
+
+  while (pc-- > 0) vpop();
+  return ret;
+}
