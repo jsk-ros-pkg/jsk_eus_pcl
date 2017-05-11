@@ -43,9 +43,12 @@ pointer OCTOMAP_DELETE (register context *ctx, int n, pointer *argv) {
   void *tree_ptr;
 
   ckarg(1);
-  tree_ptr = (void *)(ckintval(argv[0]));
 
-  delete ( (octomap::OcTree *)tree_ptr );
+  if (argv[0] != NIL) {
+    tree_ptr = (void *)(ckintval(argv[0]));
+    delete ( (octomap::OcTree *)tree_ptr );
+    return T;
+  }
 
   return NIL;
 }

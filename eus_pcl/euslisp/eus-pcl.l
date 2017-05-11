@@ -81,6 +81,9 @@
 (defun extract-indices (point-cloud indices &key (negative nil) (create t))
   (pcl::extract-indices point-cloud indices negative create))
 
+(defun crop-box (point-cloud minpoint maxpoint &key (negative nil) (create t))
+  (pcl::crop-box point-cloud minpoint maxpoint negative create))
+
 ;;;
 ;;; euspcl_features
 ;;;
@@ -211,10 +214,7 @@
   (:search-ray
    (ray-origin ray-ends &key (depth 0))
    (pcl::octomap-search-ray ptr ray-origin ray-ends depth))
-  (:dispose ()
-   (when ptr
-     (pcl::octomap-delete ptr)
-     (setq ptr nil)))
+  (:dispose () (pcl::octomap-delete ptr))
   (:transparent (&optional tr) (when tr (setq user::transparent tr)) user::transparent)
   (:draw
    (vwer)
@@ -299,21 +299,40 @@
    self)
   (:points (&rest args) (user::forward-message-to incloud args))
   (:number-of-points () (send incloud :size))
-  (:search (point &optional (k 1))
+  (:search (point &optional (k 1)) ;; return points
    (let ((ret (send self :nearest-neighbor point k)))
      (when ret
        (list (user::c-matrix-row (send incloud :points) (elt (car ret) 0))
              (elt (cdr ret) 0)))))
-  (:nearest-neighbor (point k)
+  (:k-search
+   (point &optional (k 1)) ;; return point cloud
+   (when ptr
+     (let ((ret (pcl::kdtree-k-search ptr point k))
+           pt)
+       (when ret
+         (setq pt (pcl::extract-indices incloud
+                                        (car ret)
+                                        nil t))
+         (send pt :put :distance (cdr ret))
+         (send pt :put :search-point (copy-seq point))
+         pt)
+       )))
+  (:readius-search (point radius) ;; retrun point cloud
+   (when ptr
+     (let ((ret (pcl::kdtree-r-search ptr point radius))
+           pt)
+       (when ret
+         (setq pt (pcl::extract-indices incloud
+                                        (car ret)
+                                        nil t))
+         (send pt :put :distance (cdr ret))
+         (send pt :put :search-point (copy-seq point))
+         pt)
+       )))
+  (:nearest-neighbor (point)
    (when ptr
      (pcl::kdtree-k-search ptr point 1)))
-  (:readius-search (point radius)
-   (when ptr
-     (pcl::kdtree-r-search ptr point radius)))
-  (:dispose ()
-   (when ptr
-     (pcl::kdtree-delete ptr)
-     (setq ptr nil incloud nil)))
+  (:dispose () (pcl::kdtree-delete ptr))
   )
 
 (defclass dynamic-kdtree
