@@ -91,6 +91,15 @@
   (pcl::add-normal point-cloud create radius ksearch))
 
 ;;;
+;;; euspcl_octree
+;;;
+#|
+max_vox = max[ (max - min)/resolution , 2]
+depth = ceil (log2 (max_vox) - eps)
+slen = (1 << depth) * resolution - eps
+|#
+
+;;;
 ;;; euspcl_sample_consensus
 ;;;
 (defun extract-plane (point-cloud &key (model-type pcl::*SACMODEL_PLANE*)

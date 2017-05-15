@@ -11,7 +11,8 @@ using namespace pcl17;
   PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   PointCloud< PTYPE > ret_pcl_cloud;                                    \
-  SACSegmentation< PTYPE > seg;                                         \
+  /* SACSegmentation< PTYPE > seg(true); random = true */               \
+  SACSegmentation< PTYPE > seg(false);                                  \
   /*SACSegmentationFromNormals< PTYPE, PTYPE > seg;*/                   \
   ModelCoefficients::Ptr out_coefficients (new ModelCoefficients);      \
   PointIndices::Ptr out_inliers (new PointIndices);                     \

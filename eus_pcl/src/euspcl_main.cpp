@@ -644,6 +644,7 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_filters.cpp
   defun (ctx, (char *)"DOWNSAMPLE", argv[0], (pointer (*)())PCL_VOXEL_GRID);
   defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES);
+  defun (ctx, (char *)"EXTRACT-INDICES-LIST", argv[0], (pointer (*)())PCL_EXTRACT_INDICES_LIST);
   defun (ctx, (char *)"CROP-BOX", argv[0], (pointer (*)())PCL_CROP_BOX);
 
   // euspcl_features.cpp
@@ -652,6 +653,8 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   // euspcl_octree.cpp
   defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_OCT_VOXEL);
   defun (ctx, (char *)"FILTER-CORRESPONDING-POINTS", argv[0], (pointer (*)())PCL_COR_PTS);
+  defun (ctx, (char *)"POINT-VECTOR", argv[0], (pointer (*)())PCL_OCT_POINT_VECTOR);
+  defun (ctx, (char *)"HEIGHTMAP-GRID", argv[0], (pointer (*)())PCL_OCT_HEIGHTMAP_GRID);
 
   // euspcl_registration.cpp
   defun (ctx, (char *)"REGISTRATION-RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);

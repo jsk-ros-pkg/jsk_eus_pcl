@@ -2,16 +2,6 @@
 #include "eus_pcl/euspcl_octree.h"
 
 #if __PCL_SELECT == 0
-#include <pcl/octree/octree.h>
-#include <pcl/octree/octree_impl.h>
-#include <pcl/filters/extract_indices.h>
-#elif __PCL_SELECT == 17
-#include <pcl17/octree/octree.h>
-#include <pcl17/octree/octree_impl.h>
-#include <pcl17/filters/extract_indices.h>
-#endif
-
-#if __PCL_SELECT == 0
 using namespace pcl;
 #elif __PCL_SELECT == 17
 using namespace pcl17;
@@ -244,6 +234,178 @@ pointer PCL_COR_PTS (register context *ctx, int n, pointer *argv) {
     ret = rawcons(ctx, ret_a, ret_b);
     vpop(); vpop();
   }
+
+  return ret;
+}
+
+pointer PCL_OCT_HEIGHTMAP_GRID (register context *ctx, int n, pointer *argv) {
+  /* ( pointcloud resolution max-x max-y min-x min-y */
+  pointer in_cloud;
+  pointer ret = NIL;
+  eusfloat_t resolution;
+  numunion nu;
+  double max_x, min_x;
+  double max_y, min_y;
+
+  ckarg(6);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return NIL;
+  }
+  in_cloud = argv[0];
+
+  resolution = ckfltval (argv[1]);
+  max_x = ckfltval (argv[2]);
+  max_y = ckfltval (argv[3]);
+  min_x = ckfltval (argv[4]);
+  min_y = ckfltval (argv[5]);
+  // check min/max
+
+  pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  int psize = width * height;
+
+  int xsize = ceil((max_x - min_x)/resolution);
+  int ysize = ceil((max_y - min_y)/resolution);
+
+  std::vector < std::vector<int> > indices_grid;
+  indices_grid.resize(xsize*ysize);
+  //std::cerr << "sz: " <<  psize  << ", " << width << " - " << height << std::endl;
+  //std::cerr << "res: " <<  resolution  << ", " << xsize << " - " << ysize << std::endl;
+
+  eusfloat_t *fvec = points->c.ary.entity->c.fvec.fv;
+  for(int i = 0; i < psize; i++) {
+    int p = i * 3;
+    eusfloat_t x = fvec[p + 0];
+    eusfloat_t y = fvec[p + 1];
+    int xidx = floor((x - min_x)/resolution);
+    int yidx = floor((y - min_y)/resolution);
+    if (xidx >= 0 && xidx < xsize &&
+        yidx >= 0 && yidx < ysize ) {
+      indices_grid[yidx*xsize + xidx].push_back(i);
+    }
+  }
+
+  vpush(ret);
+  for(int n = 0; n < indices_grid.size(); n++) {
+    int sz = indices_grid[n].size();
+    //std::cerr << "n: " << n << ", " << sz << std::endl;
+    if(sz > 0) {
+      pointer eus_idx;
+      std::vector< int > *idxlst = &(indices_grid[n]);
+      eus_idx = makevector (C_INTVECTOR, sz);
+      vpush (eus_idx);
+      for(int i = 0; i < sz; i++) {
+        eus_idx->c.ivec.iv[i] = idxlst->at(i);
+      }
+      ret = rawcons(ctx, eus_idx, ret);
+      vpop(); vpop();
+      vpush(ret);
+    }
+  }
+  vpop();
+
+  return ret;
+}
+
+pointer PCL_OCT_POINT_VECTOR (register context *ctx, int n, pointer *argv) {
+  /* ( pointcloud &optional (resolution 100.0) (max-x) (max-y) (max-z) (min-x) (min-y) (min-z) */
+  pointer in_cloud;
+  pointer ret = NIL;
+  eusfloat_t resolution = 100.0;
+  numunion nu;
+
+  ckarg2(1, 8);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return NIL;
+  }
+  in_cloud = argv[0];
+
+  if (n > 1) {
+    resolution = ckfltval (argv[1]);
+  }
+  resolution /= 1000.0;
+
+  PointCloud< Point >::Ptr pcl_cloud;
+  {
+    int width = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+    int height = intval (get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+    pointer points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+    pcl_cloud =
+      make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
+  }
+
+  octree::OctreePointCloudPointVector< Point > oct_pvec (resolution);
+
+  // set bunding box
+  if (n == 8) {
+    eusfloat_t max_x_arg = ckfltval (argv[2])/1000.0;
+    eusfloat_t max_y_arg = ckfltval (argv[3])/1000.0;
+    eusfloat_t max_z_arg = ckfltval (argv[4])/1000.0;
+    eusfloat_t min_x_arg = ckfltval (argv[5])/1000.0;
+    eusfloat_t min_y_arg = ckfltval (argv[6])/1000.0;
+    eusfloat_t min_z_arg = ckfltval (argv[7])/1000.0;
+    //std::cerr << "min: " << min_x_arg << ", " << min_y_arg << ", " << min_z_arg << std::endl;
+    //std::cerr << "max: " << max_x_arg << ", " << max_y_arg << ", " << max_z_arg << std::endl;
+    oct_pvec.defineBoundingBox(min_x_arg, min_y_arg, min_z_arg,
+                               max_x_arg, max_y_arg, max_z_arg);
+  } else if (n == 5) {
+    eusfloat_t max_x_arg = ckfltval (argv[2])/1000.0;
+    eusfloat_t max_y_arg = ckfltval (argv[3])/1000.0;
+    eusfloat_t max_z_arg = ckfltval (argv[4])/1000.0;
+    oct_pvec.defineBoundingBox(max_x_arg, max_y_arg, max_z_arg);
+  }
+
+  //
+  oct_pvec.setInputCloud (pcl_cloud);
+  oct_pvec.addPointsFromInputCloud ();
+
+  double min_x_, min_y_, min_z_, max_x_, max_y_, max_z_;
+  oct_pvec.getBoundingBox(min_x_, min_y_, min_z_, max_x_, max_y_, max_z_);
+
+  //std::cerr << "max depth: " << oct_pvec.getTreeDepth() << std::endl;
+  //std::cerr << "leaf num: " << oct_pvec.getLeafCount() << std::endl;
+  //std::cerr << "branch num: " << oct_pvec.getBranchCount() << std::endl;
+
+  octree::OctreePointCloudPointVector< Point >::LeafNodeIterator it
+    = oct_pvec.leaf_begin();
+  octree::OctreePointCloudPointVector< Point >::LeafNodeIterator it_end
+    = oct_pvec.leaf_end();
+
+  vpush(ret);
+  while (it != it_end) {
+    octree::OctreeKey k = it.getCurrentOctreeKey();
+    //center x,y,z
+    double cent_x = (static_cast<double> (k.x) + 0.5f) * resolution + min_x_;
+    double cent_y = (static_cast<double> (k.y) + 0.5f) * resolution + min_y_;
+    double cent_z = (static_cast<double> (k.z) + 0.5f) * resolution + min_z_;
+#if 0
+    Eigen::Vector3f minp;
+    Eigen::Vector3f maxp;
+    oct_pvec.getVoxelBounds(it, minp, maxp);
+    std::cerr << "min: " << minp.x() << ", " << minp.y() << ", " << minp.z() << std::endl;
+    std::cerr << "max: " << maxp.x() << ", " << maxp.y() << ", " << maxp.z() << std::endl;
+#endif
+    //std::cerr << "depth: " << it.getCurrentOctreeDepth() << std::endl;
+    octree::OctreePointCloudPointVector< Point >::LeafNodeIterator::LeafContainer lc = it.getLeafContainer();
+
+    std::vector< int > idx = lc.getPointIndicesVector();
+
+    pointer eus_idx;
+    eus_idx = makevector (C_INTVECTOR, idx.size());
+    vpush (eus_idx);
+    for(int i = 0; i < idx.size(); i++) {
+      eus_idx->c.ivec.iv[i] = idx[i];
+    }
+    ret = rawcons(ctx, eus_idx, ret);
+    vpop(); vpop();
+    vpush(ret);
+
+    it++;
+  }
+  vpop();
 
   return ret;
 }

@@ -164,6 +164,82 @@ pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv) {
   return ret;
 }
 
+#define EXTRACT_INDICES_LIST_(PTYPE)                                    \
+  PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
+    make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
+  ExtractIndices< PTYPE > ext_ind;                                      \
+  ext_ind.setInputCloud (pcl_cloud);                                    \
+  while (true) {                                                        \
+    pointer eus_indices = ccar(eus_indices_lst);                        \
+    eus_indices_lst = ccdr(eus_indices_lst);                            \
+    if (eus_indices != NIL) {                                           \
+      PointCloud< PTYPE > pcl_cloud_filtered;                           \
+      IndicesPtr pcl_indices (new Indices());                           \
+      if (isintvector(eus_indices)) {                                   \
+        size_t vsize = vecsize(eus_indices);                            \
+        pcl_indices->resize(vsize);                                     \
+        for(size_t i = 0; i < vsize; i++) {                             \
+          (*pcl_indices)[i] = eus_indices->c.ivec.iv[i];                \
+        }                                                               \
+      } else {                                                          \
+        error(E_TYPEMISMATCH);                                          \
+        return NIL;                                                     \
+      }                                                                 \
+      ext_ind.setIndices (pcl_indices);                                 \
+      ext_ind.filter (pcl_cloud_filtered);                              \
+      pointer euspc = make_pointcloud_from_pcl (ctx, pcl_cloud_filtered); \
+      vpush(euspc);                                                     \
+      ret = rawcons(ctx, euspc, ret);                                   \
+      vpop(); vpop();                                                   \
+      vpush(ret);                                                       \
+    } else {                                                            \
+      break;                                                            \
+    }                                                                   \
+  }
+
+pointer PCL_EXTRACT_INDICES_LIST (register context *ctx, int n, pointer *argv) {
+  /* pointcloud indices-list */
+  pointer in_cloud;
+  pointer points, colors, normals, curvatures;
+  pointer ret = NIL;
+  pointer eus_indices_lst;
+
+  numunion nu;
+  int pc = 0;
+
+  ckarg (2);
+  if (!isPointCloud (argv[0])) {
+    error(E_TYPEMISMATCH);
+    return ret;
+  }
+  in_cloud = argv[0];
+
+  eus_indices_lst = argv[1];
+
+  int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
+  int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
+  points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
+  colors = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_COLORS);
+  normals = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_NORMALS);
+  curvatures = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_CURVATURES);
+
+  vpush(ret);
+  if (points != NIL && colors != NIL && normals != NIL) {
+    EXTRACT_INDICES_LIST_(PointCN);
+  } else if (points != NIL && colors != NIL) {
+    EXTRACT_INDICES_LIST_(PointC);
+  } else if (points != NIL && normals != NIL) {
+    EXTRACT_INDICES_LIST_(PointN);
+  } else if (points != NIL) {
+    EXTRACT_INDICES_LIST_(Point);
+  } else {
+    // warning there is no points.
+  }
+  vpop();
+
+  return ret;
+}
+
 #define CROP_BOX_(PTYPE)                                                \
   PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \

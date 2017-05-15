@@ -14,6 +14,7 @@
 // eus functions
 extern pointer PCL_VOXEL_GRID (register context *ctx, int n, pointer *argv);
 extern pointer PCL_EXTRACT_INDICES (register context *ctx, int n, pointer *argv);
+extern pointer PCL_EXTRACT_INDICES_LIST (register context *ctx, int n, pointer *argv);
 extern pointer PCL_CROP_BOX (register context *ctx, int n, pointer *argv);
 
 #endif
