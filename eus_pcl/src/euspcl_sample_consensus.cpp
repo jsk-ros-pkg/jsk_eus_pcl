@@ -11,7 +11,8 @@ using namespace pcl17;
   PointCloud< PTYPE >::Ptr pcl_cloud =                                  \
     make_pcl_pointcloud< PTYPE > (ctx, points, colors, normals, curvatures, width, height); \
   PointCloud< PTYPE > ret_pcl_cloud;                                    \
-  SACSegmentation< PTYPE > seg;                                         \
+  /* SACSegmentation< PTYPE > seg(true); random = true */               \
+  SACSegmentation< PTYPE > seg(false);                                  \
   /*SACSegmentationFromNormals< PTYPE, PTYPE > seg;*/                   \
   ModelCoefficients::Ptr out_coefficients (new ModelCoefficients);      \
   PointIndices::Ptr out_inliers (new PointIndices);                     \
@@ -176,13 +177,13 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
     sac_max_iter = intval(argv[3]);
   }
   if (n > 4) {
-    sac_radius_min = fltval(argv[4]) / 1000.0;
+    sac_radius_min = ckfltval(argv[4]) / 1000.0;
   }
   if (n > 5) {
-    sac_radius_max = fltval(argv[5]) / 1000.0;
+    sac_radius_max = ckfltval(argv[5]) / 1000.0;
   }
   if (n > 6) {
-    sac_distance_thre = fltval(argv[6]) / 1000.0;
+    sac_distance_thre = ckfltval(argv[6]) / 1000.0;
   }
   if (n > 7) {
     if (argv[7] == NIL) {

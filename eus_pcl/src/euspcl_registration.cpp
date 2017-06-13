@@ -52,23 +52,23 @@ pointer PCL_REGISTRATION_RAW (register context *ctx, int n, pointer *argv) {
     _RANSACIterations = intval(argv[4]);
   }
   if (n > 5 && argv[5] != NIL) {
-    _RANSACOutlierRejectionThreshold = fltval(argv[5]);
+    _RANSACOutlierRejectionThreshold = ckfltval(argv[5]);
   }
   if (n > 6 && argv[6] != NIL) {
     _MaximumIterations = intval(argv[6]);
   }
   if (n > 7 && argv[7] != NIL) {
-    _EuclideanFitnessEpsilon = fltval(argv[7]);
+    _EuclideanFitnessEpsilon = ckfltval(argv[7]);
   }
   if (n > 8 && argv[8] != NIL) {
-    _TransformationEpsilon = fltval(argv[8]);
+    _TransformationEpsilon = ckfltval(argv[8]);
   }
   if (n > 9 && argv[9] != NIL) {
-    _MaxCorrespondenceDistance = fltval(argv[9]);
+    _MaxCorrespondenceDistance = ckfltval(argv[9]);
   }
   //
   if (n > 10 && argv[10] != NIL) {
-    _RotationEpsilon = fltval(argv[10]);
+    _RotationEpsilon = ckfltval(argv[10]);
   }
   if (n > 11 && argv[11] != NIL) {
     _CorrespondenceRandomness = intval(argv[11]);

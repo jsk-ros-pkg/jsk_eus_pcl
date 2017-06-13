@@ -69,7 +69,7 @@ pointer PCL_ADD_NORMAL (register context *ctx, int n, pointer *argv) {
     }
   }
   if (n > 2) {
-    arg_rad = fltval (argv[2]) * 0.001;
+    arg_rad = ckfltval (argv[2]) * 0.001;
   }
   if (n > 3) {
     arg_ksearch = intval (argv[3]);

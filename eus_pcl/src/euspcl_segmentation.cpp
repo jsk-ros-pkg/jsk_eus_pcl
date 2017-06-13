@@ -45,7 +45,7 @@ pointer PCL_EXTRACT_EUCLIDEAN_CLUSTERS (register context *ctx, int n, pointer *a
     maxsize = intval(argv[2]);
   }
   if ( n > 3 ) {
-    tolerance = (fltval(argv[3])) / 1000.0;
+    tolerance = (ckfltval(argv[3])) / 1000.0;
   }
 
   int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -133,10 +133,10 @@ pointer PCL_EXTRACT_PLANES (register context *ctx, int n, pointer *argv) {
     max_iterations = intval(argv[3]);
   }
   if (n > 4) {
-    tolerance = (fltval(argv[4])) / 1000.0;
+    tolerance = (ckfltval(argv[4])) / 1000.0;
   }
   if (n > 5) {
-    distance_threshold = (fltval(argv[5])) / 1000.0;
+    distance_threshold = (ckfltval(argv[5])) / 1000.0;
   }
 
   int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));

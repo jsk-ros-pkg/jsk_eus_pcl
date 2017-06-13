@@ -130,9 +130,12 @@ pointer PCL_KDTREE_DELETE (register context *ctx, int n, pointer *argv) {
   void *ptr;
 
   ckarg(1);
-  ptr = (void *)(intval(argv[0]));
 
-  delete ( (KdTreeFLANN< Point > *)ptr );
+  if (argv[0] != NIL) {
+    ptr = (void *)(intval(argv[0]));
+    delete ( (KdTreeFLANN< Point > *)ptr );
+    return T;
+  }
 
   return NIL;
 }
