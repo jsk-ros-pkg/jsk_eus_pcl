@@ -102,17 +102,21 @@ slen = (1 << depth) * resolution - eps
 ;;;
 ;;; euspcl_sample_consensus
 ;;;
-(defun extract-plane (point-cloud &key (model-type pcl::*SACMODEL_PLANE*)
-                          (method-type pcl::*SAC_RANSAC*)
-                          (max-iteration 10000) (min-radius lisp::most-negative-float)
-                          (max-radius lisp::most-positive-float)
-                          (distance-threshold 50) (optimization t) (negative nil)
-                          (return-model nil) (return-indices nil))
+(defun sample-consensus-segmentation
+  (point-cloud &key (model-type pcl::*SACMODEL_PLANE*)
+               (method-type pcl::*SAC_RANSAC*)
+               (max-iteration 10000) (min-radius lisp::most-negative-float)
+               (max-radius lisp::most-positive-float)
+               (distance-threshold 50) (optimization t) (negative nil)
+               (return-model nil) (return-indices nil))
   (pcl::sac-segmentation point-cloud
                          model-type method-type max-iteration
                          min-radius max-radius distance-threshold
                          optimization negative return-model
                          return-indices))
+(defun extract-plane (point-cloud &rest args)
+  (apply #'sample-consensus-segmentation
+         point-cloud args))
 
 (defun make-plane-from-coefficients (coefficients)
   (let ((nl (subseq coefficients 0 3))
