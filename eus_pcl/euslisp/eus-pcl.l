@@ -312,11 +312,6 @@ slen = (1 << depth) * resolution - eps
    self)
   (:points (&rest args) (user::forward-message-to incloud args))
   (:number-of-points () (send incloud :size))
-  (:search (point &optional (k 1)) ;; return points
-   (let ((ret (send self :nearest-neighbor point k)))
-     (when ret
-       (list (user::c-matrix-row (send incloud :points) (elt (car ret) 0))
-             (elt (cdr ret) 0)))))
   (:k-search
    (point &optional (k 1)) ;; return point cloud
    (when ptr
@@ -342,9 +337,29 @@ slen = (1 << depth) * resolution - eps
          (send pt :put :search-point (copy-seq point))
          pt)
        )))
-  (:nearest-neighbor (point)
+  (:search
+   (point &optional (k 1)) ;; return point (k==1) or points (k/=1)
+   (cond
+    ((= k 1)
+     (send self :nearest-neighbor point))
+    (t
+     (let ((ret (pcl::kdtree-k-search ptr point k)))
+       (when ret
+         (let ((idx (car ret))
+               (pc  (send incloud :points))
+               pts)
+           (dotimes (i (length idx))
+             (push
+              (user::c-matrix-row pc (elt idx i))
+              pts))
+           (nreverse pts)))))
+    ))
+  (:nearest-neighbor (point) ;; retrun points
    (when ptr
-     (pcl::kdtree-k-search ptr point 1)))
+     (let ((ret (pcl::kdtree-k-search ptr point 1)))
+       (user::c-matrix-row (send incloud :points)
+                           (elt (car ret) 0))
+       )))
   (:dispose () (pcl::kdtree-delete ptr))
   )
 
@@ -408,7 +423,8 @@ slen = (1 << depth) * resolution - eps
      (dotimes (i n)
        (if (aref trees i)
            (let* ((nnp-candidate
-                   (car (send (aref trees i) :search pt)))
+                   ;;(car (send (aref trees i) :search pt)))
+                   (send (aref trees i) :search pt 1))
                   (d (distance nnp-candidate pt)))
              (when (< d mind)
                (setq mind d nnp nnp-candidate))

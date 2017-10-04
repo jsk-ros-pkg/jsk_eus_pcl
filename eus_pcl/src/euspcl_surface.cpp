@@ -192,8 +192,9 @@ int compute_lms (eusfloat_t *src, int ssize,
 #endif
 
 pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
-  /* point-cloud (type) (return-polygon) */
-  ckarg2(1, 3);
+  /* point-cloud (type) (return-polygon) (args...) */
+  //ckarg2(1, 3);
+  numunion nu;
 
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
@@ -208,9 +209,14 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
 
   bool return_polygon = false;
   if (n > 2) {
-    if (argv[2] != NULL) {
+    if (argv[2] != NIL) {
       return_polygon = true;
     }
+  }
+
+  pointer arg0 = NULL;
+  if (n > 3) {
+    arg0 = argv[3];
   }
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -219,6 +225,7 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
   pointer normal = get_from_pointcloud(ctx, in_cloud, K_EUSPCL_NORMALS);
   int pc = 0;
   pointer retcloud;
+  //pointer retcloud2 = NULL;
 
   std::vector < pcl::Vertices > result_polygons;
 
@@ -246,15 +253,22 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
       PointCloud< Point >::Ptr ptr =
         make_pcl_pointcloud< Point > (ctx, points, NULL, NULL, NULL, width, height);
       PointCloud< Point >::Ptr result_points (new PointCloud<Point>);
-
+      //PointCloud< Point >::Ptr voronoi(new PointCloud<Point>);
       ConcaveHull< Point > chull;
       chull.setInputCloud (ptr);
       double alpha = 0.05;
+      if (arg0 != NULL) {
+        alpha = ckfltval (arg0) * 0.001;
+      }
+      //chull.setVoronoiCenters (voronoi);
       chull.setAlpha(alpha);
+      chull.setDimension(3);
       if(return_polygon) {
         chull.reconstruct (*result_points, result_polygons);
         retcloud = make_pointcloud_from_pcl (ctx, *result_points);
         vpush(retcloud); pc++;
+        //retcloud2 = make_pointcloud_from_pcl (ctx, *voronoi);
+        //vpush(retcloud2); pc++;
       } else {
         chull.reconstruct (*result_points);
         return make_pointcloud_from_pcl (ctx, *result_points);
@@ -273,7 +287,7 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
       PointCloud< PointNormal >::Ptr result_points (new PointCloud <PointNormal>);
 
       // Set the maximum distance between connected points (maximum edge length)
-      gp3.setSearchRadius (0.01);
+      gp3.setSearchRadius (0.025);
 
       // Set typical values for the parameters
       gp3.setMu (2.5); // ??
@@ -281,7 +295,7 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
       gp3.setMaximumSurfaceAngle(M_PI/4); // 45 degrees
       gp3.setMinimumAngle(M_PI/18); // 10 degrees
       gp3.setMaximumAngle(2*M_PI/3); // 120 degrees
-      //gp3.setNormalConsistency(true); // ??
+      gp3.setNormalConsistency(false); // ??
 
       // Get result
       gp3.setInputCloud (ptr);
@@ -297,7 +311,11 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
   pointer retval = rawcons(ctx, retcloud, NIL);
   pointer lastval = retval;
   vpush(retval); pc++;
-
+  //if (retcloud2 != NULL) {
+  //pointer tmp = rawcons(ctx, retcloud2, NIL);
+  //ccdr(lastval) = tmp;
+  //lastval = tmp;
+  //}
   for (int i = 0; i < result_polygons.size(); i++) {
     pointer ivec = makevector (C_INTVECTOR, result_polygons[i].vertices.size());
     vpush(ivec); pc++;
