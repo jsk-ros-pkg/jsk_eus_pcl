@@ -325,11 +325,24 @@ slen = (1 << depth) * resolution - eps
          (send pt :put :search-point (copy-seq point))
          pt)
        )))
-  (:readius-search (point radius) ;; retrun point cloud
+  (:radius-search (point radius &optional (min-radius)) ;; retrun point cloud
    (when ptr
      (let ((ret (pcl::kdtree-r-search ptr point radius))
            pt)
        (when ret
+         (when min-radius
+           (let ((idx (car ret))
+                 (dist (cdr ret))
+                 starti)
+             (dotimes (i (length idx))
+               (when (>= (elt dist i) min-radius)
+                 (setq starti i)
+                 (return)))
+             (unless starti
+               (return-from :radius-search nil))
+             (setq ret (cons (subseq idx starti)
+                             (subseq dist starti)))
+             ))
          (setq pt (pcl::extract-indices incloud
                                         (car ret)
                                         nil t))
