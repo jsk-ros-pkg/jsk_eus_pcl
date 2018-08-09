@@ -634,81 +634,81 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
   Spevalof (PACKAGE) = rospkg;
 #endif
   // euspcl_common.cpp
-  defun (ctx, (char *)"PCL-PCA", argv[0], (pointer (*)())PCL_PCA);
+  defun (ctx, (char *)"PCL-PCA", argv[0], (pointer (*)())PCL_PCA, NULL);
 
   // euspcl_io.cpp
-  defun (ctx, (char *)"READ-PCD", argv[0], (pointer (*)())PCL_READ_PCD);
-  defun (ctx, (char *)"WRITE-PCD", argv[0], (pointer (*)())PCL_WRITE_PCD);
-  defun (ctx, (char *)"STEP-POINTCLOUD", argv[0], (pointer (*)())PCL_STEP_POINTCLOUD);
+  defun (ctx, (char *)"READ-PCD", argv[0], (pointer (*)())PCL_READ_PCD, NULL);
+  defun (ctx, (char *)"WRITE-PCD", argv[0], (pointer (*)())PCL_WRITE_PCD, NULL);
+  defun (ctx, (char *)"STEP-POINTCLOUD", argv[0], (pointer (*)())PCL_STEP_POINTCLOUD, NULL);
 
   // euspcl_filters.cpp
-  defun (ctx, (char *)"DOWNSAMPLE", argv[0], (pointer (*)())PCL_VOXEL_GRID);
-  defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES);
-  defun (ctx, (char *)"EXTRACT-INDICES-LIST", argv[0], (pointer (*)())PCL_EXTRACT_INDICES_LIST);
-  defun (ctx, (char *)"CROP-BOX", argv[0], (pointer (*)())PCL_CROP_BOX);
+  defun (ctx, (char *)"DOWNSAMPLE", argv[0], (pointer (*)())PCL_VOXEL_GRID, NULL);
+  defun (ctx, (char *)"EXTRACT-INDICES", argv[0], (pointer (*)())PCL_EXTRACT_INDICES, NULL);
+  defun (ctx, (char *)"EXTRACT-INDICES-LIST", argv[0], (pointer (*)())PCL_EXTRACT_INDICES_LIST, NULL);
+  defun (ctx, (char *)"CROP-BOX", argv[0], (pointer (*)())PCL_CROP_BOX, NULL);
 
   // euspcl_features.cpp
-  defun (ctx, (char *)"ADD-NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL);
+  defun (ctx, (char *)"ADD-NORMAL", argv[0], (pointer (*)())PCL_ADD_NORMAL, NULL);
 
   // euspcl_octree.cpp
-  defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_OCT_VOXEL);
-  defun (ctx, (char *)"FILTER-CORRESPONDING-POINTS", argv[0], (pointer (*)())PCL_COR_PTS);
-  defun (ctx, (char *)"POINT-VECTOR", argv[0], (pointer (*)())PCL_OCT_POINT_VECTOR);
-  defun (ctx, (char *)"HEIGHTMAP-GRID", argv[0], (pointer (*)())PCL_OCT_HEIGHTMAP_GRID);
+  defun (ctx, (char *)"VOXEL-GRID", argv[0], (pointer (*)())PCL_OCT_VOXEL, NULL);
+  defun (ctx, (char *)"FILTER-CORRESPONDING-POINTS", argv[0], (pointer (*)())PCL_COR_PTS, NULL);
+  defun (ctx, (char *)"POINT-VECTOR", argv[0], (pointer (*)())PCL_OCT_POINT_VECTOR, NULL);
+  defun (ctx, (char *)"HEIGHTMAP-GRID", argv[0], (pointer (*)())PCL_OCT_HEIGHTMAP_GRID, NULL);
 
   // euspcl_registration.cpp
-  defun (ctx, (char *)"REGISTRATION-RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW);
+  defun (ctx, (char *)"REGISTRATION-RAW", argv[0], (pointer (*)())PCL_REGISTRATION_RAW, NULL);
 
   // euspcl_sample_consensus.cpp
-  defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION);
+  defun (ctx, (char *)"SAC-SEGMENTATION", argv[0], (pointer (*)())PCL_SAC_SEGMENTATION, NULL);
 
   // euspcl_segmentation.cpp
   defun (ctx, (char *)"EXTRACT-EUCLIDEAN-CLUSTERS", argv[0],
-         (pointer (*)())PCL_EXTRACT_EUCLIDEAN_CLUSTERS);
-  defun (ctx, (char *)"EXTRACT-PLANES", argv[0], (pointer (*)())PCL_EXTRACT_PLANES);
+         (pointer (*)())PCL_EXTRACT_EUCLIDEAN_CLUSTERS, NULL);
+  defun (ctx, (char *)"EXTRACT-PLANES", argv[0], (pointer (*)())PCL_EXTRACT_PLANES, NULL);
 
   // euspcl_surface.cpp
-  defun (ctx, (char *)"SURFACE-CONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_CONSTRUCTION);
-  defun (ctx, (char *)"SURFACE-RECONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_RECONSTRUCTION);
+  defun (ctx, (char *)"SURFACE-CONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_CONSTRUCTION, NULL);
+  defun (ctx, (char *)"SURFACE-RECONSTRUCTION", argv[0], (pointer (*)())PCL_SURFACE_RECONSTRUCTION, NULL);
 
   // euspcl_recoginition.cpp
-  defun (ctx, (char *)"ISM-TRAINING", argv[0], (pointer (*)())PCL_ISM_TRAINING);
-  defun (ctx, (char *)"ISM-DETECTION", argv[0], (pointer (*)())PCL_ISM_DETECTION);
+  defun (ctx, (char *)"ISM-TRAINING", argv[0], (pointer (*)())PCL_ISM_TRAINING, NULL);
+  defun (ctx, (char *)"ISM-DETECTION", argv[0], (pointer (*)())PCL_ISM_DETECTION, NULL);
 
   // euspcl_octomap.cpp
-  defun (ctx, (char *)"OCTOMAP-CREATE", argv[0], (pointer (*)())OCTOMAP_CREATE);
-  defun (ctx, (char *)"OCTOMAP-DELETE", argv[0], (pointer (*)())OCTOMAP_DELETE);
-  defun (ctx, (char *)"OCTOMAP-READ-NODES", argv[0], (pointer (*)())OCTOMAP_READ_NODES);
-  defun (ctx, (char *)"OCTOMAP-READ-UNKNOWN", argv[0], (pointer (*)())OCTOMAP_READ_UNKNOWN);
-  defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM);
-  defun (ctx, (char *)"OCTOMAP-ADD-POINTS", argv[0], (pointer (*)())OCTOMAP_ADD_POINTS);
-  defun (ctx, (char *)"OCTOMAP-DUMP-DATA", argv[0], (pointer (*)())OCTOMAP_DUMP_DATA);
-  defun (ctx, (char *)"OCTOMAP-RESOLUTION", argv[0], (pointer (*)())OCTOMAP_RESOLUTION);
-  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX);
+  defun (ctx, (char *)"OCTOMAP-CREATE", argv[0], (pointer (*)())OCTOMAP_CREATE, NULL);
+  defun (ctx, (char *)"OCTOMAP-DELETE", argv[0], (pointer (*)())OCTOMAP_DELETE, NULL);
+  defun (ctx, (char *)"OCTOMAP-READ-NODES", argv[0], (pointer (*)())OCTOMAP_READ_NODES, NULL);
+  defun (ctx, (char *)"OCTOMAP-READ-UNKNOWN", argv[0], (pointer (*)())OCTOMAP_READ_UNKNOWN, NULL);
+  defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM, NULL);
+  defun (ctx, (char *)"OCTOMAP-ADD-POINTS", argv[0], (pointer (*)())OCTOMAP_ADD_POINTS, NULL);
+  defun (ctx, (char *)"OCTOMAP-DUMP-DATA", argv[0], (pointer (*)())OCTOMAP_DUMP_DATA, NULL);
+  defun (ctx, (char *)"OCTOMAP-RESOLUTION", argv[0], (pointer (*)())OCTOMAP_RESOLUTION, NULL);
+  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX, NULL);
   //
-  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX-INFO", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX_INFO);
-  defun (ctx, (char *)"OCTOMAP-CLAMPING-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_CLAMPING_THRESHOLD);
-  defun (ctx, (char *)"OCTOMAP-METRIC-INFO", argv[0], (pointer (*)())OCTOMAP_METRIC_INFO);
-  defun (ctx, (char *)"OCTOMAP-OCCUPANCY-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_OCCUPANCY_THRESHOLD);
-  defun (ctx, (char *)"OCTOMAP-PROBABILITY", argv[0], (pointer (*)())OCTOMAP_PROBABILITY);
-  defun (ctx, (char *)"OCTOMAP-GET-TREE-INFO", argv[0], (pointer (*)())OCTOMAP_GET_TREE_INFO);
-  defun (ctx, (char *)"OCTOMAP-USE-BBX-LIMIT", argv[0], (pointer (*)())OCTOMAP_USE_BBX_LIMIT);
-  defun (ctx, (char *)"OCTOMAP-SEARCH-RAY", argv[0], (pointer (*)())OCTOMAP_SEARCH_RAY);
+  defun (ctx, (char *)"OCTOMAP-BOUNDING-BOX-INFO", argv[0], (pointer (*)())OCTOMAP_BOUNDING_BOX_INFO, NULL);
+  defun (ctx, (char *)"OCTOMAP-CLAMPING-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_CLAMPING_THRESHOLD, NULL);
+  defun (ctx, (char *)"OCTOMAP-METRIC-INFO", argv[0], (pointer (*)())OCTOMAP_METRIC_INFO, NULL);
+  defun (ctx, (char *)"OCTOMAP-OCCUPANCY-THRESHOLD", argv[0], (pointer (*)())OCTOMAP_OCCUPANCY_THRESHOLD, NULL);
+  defun (ctx, (char *)"OCTOMAP-PROBABILITY", argv[0], (pointer (*)())OCTOMAP_PROBABILITY, NULL);
+  defun (ctx, (char *)"OCTOMAP-GET-TREE-INFO", argv[0], (pointer (*)())OCTOMAP_GET_TREE_INFO, NULL);
+  defun (ctx, (char *)"OCTOMAP-USE-BBX-LIMIT", argv[0], (pointer (*)())OCTOMAP_USE_BBX_LIMIT, NULL);
+  defun (ctx, (char *)"OCTOMAP-SEARCH-RAY", argv[0], (pointer (*)())OCTOMAP_SEARCH_RAY, NULL);
   // no arg methods
-  defun (ctx, (char *)"OCTOMAP-BBX_SET", argv[0], (pointer (*)())OCTOMAP_BBX_SET);
-  defun (ctx, (char *)"OCTOMAP-CLEAR", argv[0], (pointer (*)())OCTOMAP_CLEAR);
-  defun (ctx, (char *)"OCTOMAP-CLEAR-KEY-RAYS", argv[0], (pointer (*)())OCTOMAP_CLEAR_KEY_RAYS);
-  defun (ctx, (char *)"OCTOMAP-EXPAND", argv[0], (pointer (*)())OCTOMAP_EXPAND);
-  defun (ctx, (char *)"OCTOMAP-PRUNE", argv[0], (pointer (*)())OCTOMAP_PRUNE);
-  defun (ctx, (char *)"OCTOMAP-TO-MAX-LIKELIHOOD", argv[0], (pointer (*)())OCTOMAP_TO_MAX_LIKELIHOOD);
-  defun (ctx, (char *)"OCTOMAP-UPDATE-INNER-OCCUPANCY", argv[0], (pointer (*)())OCTOMAP_UPDATE_INNER_OCCUPANCY);
-  defun (ctx, (char *)"OCTOMAP-GET-TREE-DEPTH", argv[0], (pointer (*)())OCTOMAP_GET_TREE_DEPTH);
+  defun (ctx, (char *)"OCTOMAP-BBX_SET", argv[0], (pointer (*)())OCTOMAP_BBX_SET, NULL);
+  defun (ctx, (char *)"OCTOMAP-CLEAR", argv[0], (pointer (*)())OCTOMAP_CLEAR, NULL);
+  defun (ctx, (char *)"OCTOMAP-CLEAR-KEY-RAYS", argv[0], (pointer (*)())OCTOMAP_CLEAR_KEY_RAYS, NULL);
+  defun (ctx, (char *)"OCTOMAP-EXPAND", argv[0], (pointer (*)())OCTOMAP_EXPAND, NULL);
+  defun (ctx, (char *)"OCTOMAP-PRUNE", argv[0], (pointer (*)())OCTOMAP_PRUNE, NULL);
+  defun (ctx, (char *)"OCTOMAP-TO-MAX-LIKELIHOOD", argv[0], (pointer (*)())OCTOMAP_TO_MAX_LIKELIHOOD, NULL);
+  defun (ctx, (char *)"OCTOMAP-UPDATE-INNER-OCCUPANCY", argv[0], (pointer (*)())OCTOMAP_UPDATE_INNER_OCCUPANCY, NULL);
+  defun (ctx, (char *)"OCTOMAP-GET-TREE-DEPTH", argv[0], (pointer (*)())OCTOMAP_GET_TREE_DEPTH, NULL);
 
   // euspcl_kdtree.cpp
-  defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH);
-  defun (ctx, (char *)"KDTREE-R-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_R_SEARCH);
-  defun (ctx, (char *)"KDTREE-CREATE", argv[0], (pointer (*)())PCL_KDTREE_CREATE);
-  defun (ctx, (char *)"KDTREE-DELETE", argv[0], (pointer (*)())PCL_KDTREE_DELETE);
+  defun (ctx, (char *)"KDTREE-K-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_K_SEARCH, NULL);
+  defun (ctx, (char *)"KDTREE-R-SEARCH", argv[0], (pointer (*)())PCL_KDTREE_R_SEARCH, NULL);
+  defun (ctx, (char *)"KDTREE-CREATE", argv[0], (pointer (*)())PCL_KDTREE_CREATE, NULL);
+  defun (ctx, (char *)"KDTREE-DELETE", argv[0], (pointer (*)())PCL_KDTREE_DELETE, NULL);
 
 #ifdef USE_PACKAGE
   // reset package
