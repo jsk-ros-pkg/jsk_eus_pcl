@@ -20,7 +20,7 @@
 (defvar pcl::*SACMODEL_NORMAL_PARALLEL_PLANE* 16)
 (defvar pcl::*SACMODEL_STICK* 17)
 
-;; method types
+;; sampleconsensus method types
 (defvar pcl::*SAC_RANSAC*  0)
 (defvar pcl::*SAC_LMEDS*   1)
 (defvar pcl::*SAC_MSAC*    2)
@@ -29,11 +29,19 @@
 (defvar pcl::*SAC_MLESAC*  5)
 (defvar pcl::*SAC_PROSAC*  6)
 
-;; EUS_ICP_TYPE
+;; ICP types
 (defvar pcl::*REGIST_SVD*  0)
 (defvar pcl::*REGIST_NL*   1)
 (defvar pcl::*REGIST_GICP* 2)
 (defvar pcl::*REGIST_NDT*  3)
+
+;; surface construct types
+(defvar pcl::*CONVEX_HULL*  0)
+(defvar pcl::*CONCAVE_HULLL*   1)
+(defvar pcl::*GREEDY_PROJECTION* 2)
+;; surface reconstruct types
+(defvar pcl::*POISSON*  0)
+(defvar pcl::*MARCHING_CUBES*   1)
 
 (unless (find-package "EUS_PCL") (make-package "EUS_PCL"))
 (in-package "EUS_PCL")
@@ -127,6 +135,10 @@ slen = (1 << depth) * resolution - eps
 ;;;
 ;;; euspcl_surface
 ;;;
+(defun surface-construction (point-cloud &key (type pcl::*CONVEX_HULL*))
+  (let ((ret (pcl::surface-construction point-cloud type t)))
+    (make-faceset-from-polygon-result (car ret) (cdr ret))
+    ))
 (defun make-faces-from-polygon-result (point-cloud polygons)
   (let ((mat (send point-cloud :points))
         ret)
