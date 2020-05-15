@@ -677,7 +677,9 @@ pointer ___eus_pcl(register context *ctx, int n, pointer *argv, pointer env)
 
   // euspcl_octomap.cpp
   defun (ctx, (char *)"OCTOMAP-CREATE", argv[0], (pointer (*)())OCTOMAP_CREATE, NULL);
+  defun (ctx, (char *)"OCTOMAP-CREATE-COLOR", argv[0], (pointer (*)())OCTOMAP_CREATE_COLOR, NULL);
   defun (ctx, (char *)"OCTOMAP-DELETE", argv[0], (pointer (*)())OCTOMAP_DELETE, NULL);
+  defun (ctx, (char *)"OCTOMAP-READ-BINARY", argv[0], (pointer (*)())OCTOMAP_READ_BINARY, NULL);
   defun (ctx, (char *)"OCTOMAP-READ-NODES", argv[0], (pointer (*)())OCTOMAP_READ_NODES, NULL);
   defun (ctx, (char *)"OCTOMAP-READ-UNKNOWN", argv[0], (pointer (*)())OCTOMAP_READ_UNKNOWN, NULL);
   defun (ctx, (char *)"OCTOMAP-NODE-NUM", argv[0], (pointer (*)())OCTOMAP_NODE_NUM, NULL);
