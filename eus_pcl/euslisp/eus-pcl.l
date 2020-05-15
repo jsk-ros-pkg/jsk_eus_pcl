@@ -173,22 +173,31 @@ slen = (1 << depth) * resolution - eps
           disp-id)
   )
 (defmethod octomap
-  (:init (&key ((:resolution r) 50) (type)
+  (:init (&key ((:resolution r) 50) ((:type tp))
                (max-bounding-box) (min-bounding-box))
    (setq resolution r)
-   (setq ptr (pcl::octomap-create resolution))
+   (case tp
+    ((:color :color-octree)
+     (setq ptr (pcl::octomap-create-color resolution))
+     (setq type :color-octree)
+     )
+    (t
+     (setq ptr (pcl::octomap-create resolution))
+     (setq type :octree)
+     ))
    (sys::dispose-hook self t)
    (send-super :init)
    self)
   (:init-from-msg (msg) ;; msg is octomap_msgs/Octomap
    ;; check message type (send msg :id)
    (when (string= (send msg :id) "OcTree")
-     (setq type (send msg :id))
+     ;;(setq type (send msg :id))
+     (setq type :octree)
      (setq resolution (* (send msg :resolution) 1000.0))
-     (setq ptr (pcl::octomap-create
-                resolution (coerce (send msg :data) string)
-                (send msg :binary)))
-     (if ptr self)
+     (setq ptr (pcl::octomap-create resolution))
+     (pcl::octomap-read-binary
+      ptr (coerce (send msg :data) string) (send msg :binary))
+     self
      ))
   ;;
   (:get-tree-depth () (pcl::octomap-get-tree-depth ptr))
@@ -213,16 +222,42 @@ slen = (1 << depth) * resolution - eps
   (:get-tree-info () (pcl::octomap-get-tree-info ptr))
   (:use-bounding-box-limit (&optional (enable t)) (pcl::octomap-use-bbx-limit ptr enable))
   (:number-of-nodes () (pcl::octomap-node-num ptr))
+  ;;
   (:add-points
    (point-cloud &key (origin (float-vector 0 0 0)))
    (pcl::octomap-add-points ptr point-cloud origin))
   (:read-nodes
-   (&key (depth 0) (return-free nil) (return-both) (with-color) (multi-resolution))
-   (pcl::octomap-read-nodes ptr depth return-free return-both with-color multi-resolution))
-  (:update-visual
-   (&key (return-both) ((:transparent tp) 0.7))
-   (let* ((pt (send self :read-nodes :return-both return-both :with-color t :multi-resolution t))
-          (max-depth_ (send self :get-tree-depth))
+   (&key (depth 0) (return-free nil) (return-both) (with-color) (multi-resolution) (color))
+   (pcl::octomap-read-nodes ptr depth return-free return-both with-color multi-resolution color))
+  (:udpate-visual
+   (&key (color) &rest args &allow-other-keys)
+   (when (and colotr (eq type :octree))
+     (warn ";; this octomap type is ~A, this type can't use color" :octree))
+   (cond
+    ((and color (eq type :color-octree))
+     (send* self :update-visual-color args))
+    (t
+     (send* self :update-visual-octree args))
+    )
+   )
+  (:update-visual-color
+   (&key (return-both) ((:transparent tp) 0.7) (depth 0) (color-probability))
+   (let* ((max-depth_ (send self :get-tree-depth))
+          (pt (send self :read-nodes :return-both return-both :color t
+                    :with-color color-probability :multi-resolution t :depth (if (< depth 0) (+ max-depth_ depth) depth)))
+          (depth-vec_ (send pt :get :result)))
+     (replace-object self pt)
+     (setq max-depth max-depth_
+           depth-vec depth-vec_
+           user::transparent tp)
+     (setq disp-id-vec (instantiate vector (+ max-depth 1)))
+     self
+     ))
+  (:update-visual-octree
+   (&key (return-both) ((:transparent tp) 0.7) (depth 0) (color-probability t))
+   (let* ((max-depth_ (send self :get-tree-depth))
+          (pt (send self :read-nodes :return-both return-both :color nil
+                    :with-color color-probability :multi-resolution t :depth (if (< depth 0) (+ max-depth_ depth) depth)))
           (depth-vec_ (send pt :get :result)))
      (replace-object self pt)
      (setq max-depth max-depth_
