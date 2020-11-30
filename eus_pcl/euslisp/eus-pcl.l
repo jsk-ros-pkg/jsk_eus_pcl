@@ -116,12 +116,12 @@ slen = (1 << depth) * resolution - eps
                (max-iteration 10000) (min-radius lisp::most-negative-float)
                (max-radius lisp::most-positive-float)
                (distance-threshold 50) (optimization t) (negative nil)
-               (return-model nil) (return-indices nil))
+               (return-model nil) (return-indices nil) (indices))
   (pcl::sac-segmentation point-cloud
                          model-type method-type max-iteration
                          min-radius max-radius distance-threshold
                          optimization negative return-model
-                         return-indices))
+                         return-indices indices))
 (defun extract-plane (point-cloud &rest args)
   (apply #'sample-consensus-segmentation
          point-cloud args))

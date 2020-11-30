@@ -28,6 +28,7 @@ using namespace pcl17;
   /*seg.setEpsAngle (double ea); */                                     \
   seg.setInputCloud (pcl_cloud);                                        \
   /*seg.setInputNormals (pcl_cloud); */                                 \
+  if (!!in_indices) seg.setIndices (in_indices);                        \
   /*seg.setNormalDistanceWeight (normal_distance_weight);*/             \
   /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
   /*seg.setDistanceFromOrigin (const double d);*/                       \
@@ -77,6 +78,7 @@ using namespace pcl17;
   /*seg.setEpsAngle (double ea); */                                     \
   seg.setInputCloud (pcl_cloud);                                        \
   seg.setInputNormals (pcl_cloud);                                      \
+  if (!!in_indices) seg.setIndices (in_indices);                        \
   /*seg.setNormalDistanceWeight (normal_distance_weight);*/             \
   /*seg.setMinMaxOpeningAngle (const double &min_angle, const double &max_angle);*/ \
   /*seg.setDistanceFromOrigin (const double d);*/                       \
@@ -140,7 +142,7 @@ SAC_PROSAC  = 6;
 pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   /* (pointcloud &optional (model_type) (method_type) */
   /* (max_iter 10000) (radius_min 0.0) (radius_max 0.1) (distance_thre 0.05) (optimize t) (extract_negative) */
-  /* (retrun_model) (return_indices) */
+  /* (retrun_model) (return_indices) (use_indices) */
   pointer in_cloud;
   pointer points, colors, normals, curvatures;
   pointer ret = NIL;
@@ -159,6 +161,7 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
   // for with_normal
   bool with_normal;
   eusfloat_t normal_distance_weight = 0.1;
+  IndicesPtr in_indices;
 
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
@@ -205,7 +208,33 @@ pointer PCL_SAC_SEGMENTATION (register context *ctx, int n, pointer *argv) {
       return_indices = true;
     }
   }
+  if (n > 11 && argv[11] != NIL) {
+    // integer vector
+    pointer eus_indices = argv[11];
+    in_indices = IndicesPtr(new Indices());
 
+    if (isintvector(eus_indices)) {
+      // intvec
+      size_t vsize = vecsize(eus_indices);
+      in_indices->resize(vsize);
+      for(size_t i = 0; i < vsize; i++) {
+        (*in_indices)[i] = eus_indices->c.ivec.iv[i];
+      }
+    } else if (iscons(eus_indices)) {
+      // list
+      pointer tmp = eus_indices;
+      in_indices->resize(0);
+      while (tmp != NIL) {
+        pointer i = ccar(tmp);
+        if (isint (i)) {
+          in_indices->push_back (intval(i));
+        }
+        tmp = ccdr(tmp);
+      }
+    } else {
+      error(E_TYPEMISMATCH);
+    }
+  }
   int width = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_WIDTH));
   int height = intval(get_from_pointcloud (ctx, in_cloud, K_EUSPCL_HEIGHT));
   points = get_from_pointcloud (ctx, in_cloud, K_EUSPCL_POINTS);
