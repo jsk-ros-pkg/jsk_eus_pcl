@@ -66,7 +66,7 @@
   (create-pointcloud-octomap *obj* :camera-model *camera-model* :resolution resolution)
   )
 
-(defun create-objects-points-with-camera (target-obj &key (camera-model) (offset-scale 3))
+(defun create-objects-points-with-camera (target-obj &key (camera-model) (offset-scale 3) (add-normal))
   (unless camera-model
     (setq camera-model
           (make-camera-from-param :pwidth 160 :pheight 160
@@ -104,6 +104,8 @@
                   pts (cdr ret))
              ;; remove nearest point
             (send pts :filter :key #'(lambda (p) (> (norm p) 1.0)) :create nil)
+            (if add-normal
+                (eus_pcl::calc-normals pts :ksearch 8))
             ;;
             (send pts :transform (send camera-model :worldcoords))
             (push pts results)
@@ -112,13 +114,14 @@
       )
     results))
 
-(defun create-pointcloud-octomap (target-obj &key (resolution 2.0) (camera-model))
+(defun create-pointcloud-octomap (target-obj &key (resolution 2.0) (camera-model) (interactive t))
   (setq *result-points* (create-objects-points-with-camera target-obj :camera-model camera-model))
   (send-all *result-points* :point-size 6)
   (send *irtviewer* :objects *result-points*)
   (send *irtviewer* :draw-objects)
-  (warn ";; input key...~%")
-  (do-until-key (x::window-main-one))
+  (when interactive
+    (warn ";; input key...~%")
+    (do-until-key (x::window-main-one)))
 
   (setq *omap* (instance eus_pcl::octomap :init :resolution resolution :type :color-octree))
 
@@ -137,8 +140,11 @@
   (send *omap* :update-visual-color :transparent nil)
   (send *irtviewer* :objects (list *omap*))
   (send *irtviewer* :draw-objects)
-  (warn ";; input key...~%")
-  (do-until-key (x::window-main-one))
+  (when interactive
+    (warn ";; input key...~%")
+    (do-until-key (x::window-main-one)))
+  (unless interactive
+    (return-from create-pointcloud-octomap))
 
   (send *omap* :update-visual-color :transparent nil :depth -1)
   (send *irtviewer* :draw-objects)
