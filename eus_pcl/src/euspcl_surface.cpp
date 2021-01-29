@@ -332,8 +332,10 @@ pointer PCL_SURFACE_CONSTRUCTION (register context *ctx, int n, pointer *argv) {
 }
 
 pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv) {
-  /* point-cloud (type) */
-  ckarg2(1, 2);
+  /* point-cloud (type) (debug) */
+  //ckarg2(1, 2);
+  numunion nu;
+  if (n == 0)  error(E_MISMATCHARG);
 
   if (!isPointCloud (argv[0])) {
     error(E_TYPEMISMATCH);
@@ -344,6 +346,12 @@ pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv)
   if (n > 1) {
     int intype = ckintval(argv[1]);
     type = static_cast<SURFACE_RECONSTRUCT_TYPE>(intype);
+  }
+  bool debug = false;
+  if (n > 2) {
+    if ( argv[2] != NIL ) {
+      debug = true;
+    }
   }
 
   int width = intval(get_from_pointcloud(ctx, in_cloud, K_EUSPCL_WIDTH));
@@ -365,18 +373,17 @@ pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv)
       pcl::Poisson <PointNormal> surf_reconst;
       // parameters
       /*
-      void setDepth (int depth);
-      void setMinDepth (int min_depth);
-      void setPointWeight (float point_weight);
-      void setScale (float scale);
-      void setSolverDivide (int solver_divide);
-      void setIsoDivide (int iso_divide);
-      void setSamplesPerNode (float samples_per_node);
-      void setConfidence (bool confidence);
-      void setOutputPolygons (bool output_polygons);
-      bool getOutputPolygons ();
-      void setDegree (int degree);
-      void setManifold (bool manifold);
+      void setDepth (int depth); // 3
+      void setMinDepth (int min_depth); // 4
+      void setPointWeight (float point_weight); // 5
+      void setScale (float scale); // 6
+      void setSolverDivide (int solver_divide); // 7
+      void setIsoDivide (int iso_divide); // 8
+      void setSamplesPerNode (float samples_per_node); // 9
+      void setConfidence (bool confidence); // 10
+      void setOutputPolygons (bool output_polygons); // 11
+      void setDegree (int degree); // 12
+      void setManifold (bool manifold); // 13
       */
 
       surf_reconst.setInputCloud (ptr);
@@ -388,12 +395,33 @@ pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv)
       pcl::MarchingCubesHoppe <PointNormal> surf_reconst;
       //pcl::MarchingCubesRBF <PointNormal> surf_reconst;
       /*
-      void setIsoLevel (float iso_level);
-      void setGridResolution (int res_x, int res_y, int res_z);
-      void setPercentageExtendGrid (float percentage);
+      void setIsoLevel (float iso_level); //3
+      void setGridResolution (int res_x, int res_y, int res_z); //4,5,6
+      void setPercentageExtendGrid (float percentage); //7
       void setOffSurfaceDisplacement (float epsilon); //just for RDF
+      setDistanceIgnore(const float dist_ignore) // 8
       */
-
+      if (n > 3) {
+        float iso_level = 0.0;
+        iso_level = ckfltval(argv[3]);
+        surf_reconst.setIsoLevel ( iso_level );
+      }
+      if (n > 6) {
+        int res_x = 32, res_y = 32, res_z = 32;
+        res_x = ckintval(argv[4]);
+        res_y = ckintval(argv[5]);
+        res_z = ckintval(argv[6]);
+        surf_reconst.setGridResolution (res_x, res_y, res_z);
+      }
+      if (n > 7) {
+        float percentage = 0.0;
+        percentage = ckfltval(argv[7]);
+        surf_reconst.setPercentageExtendGrid ( percentage );
+      }
+      //if (n > 8) {
+      //  float dist_ignore = -1.0;
+      //  surf_reconst.setDistanceIgnore ( dist_ignore ) // 8
+      //}
       surf_reconst.setInputCloud (ptr);
       surf_reconst.reconstruct(*result_points, result_polygons);
     }
@@ -403,6 +431,7 @@ pointer PCL_SURFACE_RECONSTRUCTION (register context *ctx, int n, pointer *argv)
   }
 
   if (result_polygons.size() == 0) {
+    std::cerr << "size = 0\n" << std::endl;
     return NIL;
   }
 

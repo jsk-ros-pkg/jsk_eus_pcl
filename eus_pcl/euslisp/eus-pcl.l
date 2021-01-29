@@ -152,6 +152,18 @@ slen = (1 << depth) * resolution - eps
   (instance geo::faceset :init :faces
             (make-faces-from-polygon-result point-cloud polygons)))
 
+(defun poisson-surface-reconstruction ())
+(defun marching-cube-surface-reconstruction
+    (point-cloud &key (debug nil) (iso-level 0.0)
+                 (res-x 24) (res-y 24) (res-z 24)
+                 (extendprid-percentage 0.8))
+  (let ((ret (pcl::surface-reconstruction
+              point-cloud pcl::*MARCHING_CUBES*
+              debug iso-level res-x res-y res-z
+              extendprid-percentage)))
+    (make-faceset-from-polygon-result (car ret) (cdr ret))
+    ))
+
 ;;;
 ;;; euspcl_segmentation
 ;;;

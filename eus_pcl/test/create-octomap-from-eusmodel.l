@@ -181,3 +181,27 @@
   (send *irtviewer* :draw-objects)
   (do-until-key (x::window-main-one)))
 |#
+
+#|
+;; marching-cube demo
+(setq g0 (make-icosahedron 100.0))
+(setq g1 (make-gdome g0))
+(setq bd (instance bodyset :init (make-cascoords) :bodies (list g1)))
+
+(setq *camera-model*
+        (make-camera-from-param :pwidth 160 :pheight 160
+                                :fx 100 :fy 100
+                                :cx 79.5 :cy 59.5 :name "camtest"
+                                :create-viewer t))
+(setq *result-points*
+      (create-objects-points-with-camera bd :camera-model *camera-model* :add-normal t))
+
+(setq in-points
+      (let ((r (mapcar #'(lambda (pc) (send pc :convert-to-world :create t)) *result-points*)))
+        (send (car r) :append (cdr r))))
+
+
+(setq fs (euc_pcl::marching-cube-surface-reconstruction in-points))
+
+(objects (list fs))
+|#
